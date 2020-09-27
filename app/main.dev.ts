@@ -10,11 +10,19 @@
  */
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import path from 'path';
-import { app, BrowserWindow } from 'electron';
+import path, { join } from 'path';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { fork } from 'child_process';
 import MenuBuilder from './menu';
+import {
+  ID_RENDERER,
+  CHAN_RENDERER_TO_WORKER,
+  CHAN_WORKER_TO_RENDERER,
+  CHAN_WORKER_ERROR,
+  TYPE_ERROR,
+} from './types';
 
 export default class AppUpdater {
   constructor() {
@@ -58,8 +66,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    minWidth: 1200,
+    height: 720,
     webPreferences:
       (process.env.NODE_ENV === 'development' ||
         process.env.E2E_BUILD === 'true') &&
@@ -99,6 +107,38 @@ const createWindow = async () => {
   // eslint-disable-next-line
   new AppUpdater();
 };
+
+const workerPath =
+  process.env.NODE_ENV === 'development'
+    ? 'app/worker.js'
+    : 'app.asar/dist/worker.js';
+const workerCwd =
+  process.env.NODE_ENV === 'development' ? undefined : join(__dirname, '..');
+const worker = fork(workerPath, { cwd: workerCwd });
+
+worker.on('message', (msg) => {
+  const { dst, type } = msg;
+  if (dst === ID_RENDERER) {
+    if (mainWindow === null) {
+      return;
+    }
+    switch (type) {
+      case TYPE_ERROR: {
+        const { error } = msg;
+        mainWindow.webContents.send(CHAN_WORKER_ERROR, error);
+        break;
+      }
+      default: {
+        mainWindow.webContents.send(CHAN_WORKER_TO_RENDERER, msg);
+        break;
+      }
+    }
+  }
+});
+
+ipcMain.on(CHAN_RENDERER_TO_WORKER, (_event, msg) => {
+  worker.send(msg);
+});
 
 /**
  * Add event listeners...

@@ -1,6 +1,10 @@
 import React from 'react';
-import Home from '../components/Home';
+import { Segment, Header } from 'semantic-ui-react';
 
 export default function HomePage() {
-  return <Home />;
+  return (
+    <Segment>
+      <Header as="h1">tool3rd</Header>
+    </Segment>
+  );
 }
