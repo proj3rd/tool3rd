@@ -7,6 +7,9 @@ Assistant for 3GPP telecommunication development
   - [Load Resources](#load-resources)
   - [Format Messages/IEs](#format-messagesies)
   - [Diff ASN.1](#diff-asn1)
+- [misc](#misc)
+  - [Library](#library)
+  - [Sponsor](#sponsor)
 
 ## Interface
 
@@ -84,3 +87,16 @@ After resources are added in the list, resources will be actually available by c
 4. Click `Diff` to diff the two specifications
 
 [3gpp-specs]: https://github.com/3gpp-network/3gpp-specs
+
+# misc
+
+## Library
+
+tool3rd is based on a library [lib3rd](https://github.com/3gpp-network/lib3rd)
+
+## Sponsor
+
+Currently, tool3rd is a non-commercial project.
+Please consider sponsor for this project to grow
+
+- Bitcoin: 1CYuPZZSTY95hyY5gX1ptPQz9r2ihkDJua
