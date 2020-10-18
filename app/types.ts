@@ -26,6 +26,7 @@ export const TYPE_RATE_LIMIT = 'rateLimit';
 export const TYPE_RESOURCE_LIST = 'resourceList';
 export const TYPE_RESOURCE_STATE_REQ = 'resourceStateRequest';
 export const TYPE_STATE = 'state';
+export const TYPE_TOAST = 'toast';
 export const TYPE_WORK_COMPLETE = 'workComplete';
 
 export const STATE_WAITING = 'waiting';

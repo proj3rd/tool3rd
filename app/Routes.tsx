@@ -12,6 +12,7 @@ import {
   Form,
   Button,
   Dropdown,
+  Message,
 } from 'semantic-ui-react';
 import { ipcRenderer, remote, shell } from 'electron';
 import routes from './constants/routes.json';
@@ -31,15 +32,24 @@ import {
   TYPE_LOAD_FROM_WEB_REQ,
   TYPE_RATE_LIMIT,
   TYPE_LOAD_FILE_REQ,
+  TYPE_TOAST,
 } from './types';
 import Diff from './containers/Diff';
 import Format from './containers/Format';
+
+type Toast = {
+  key: number;
+  message: string;
+  autoDismiss: boolean;
+};
 
 type State = {
   resourceList: Resource[];
   rateRemaining: number | undefined;
   waiting: boolean;
   workerError: Error | null;
+  toastList: Toast[];
+  numToast: number;
 };
 
 export default class Routes extends React.Component<
@@ -55,9 +65,13 @@ export default class Routes extends React.Component<
       rateRemaining: undefined,
       waiting: false,
       workerError: null,
+      toastList: [],
+      numToast: 0,
     };
     this.onIpc = this.onIpc.bind(this);
     this.onWorkerError = this.onWorkerError.bind(this);
+    this.addToast = this.addToast.bind(this);
+    this.removeToast = this.removeToast.bind(this);
   }
 
   componentDidMount() {
@@ -105,6 +119,11 @@ export default class Routes extends React.Component<
         this.setState({ resourceList });
         break;
       }
+      case TYPE_TOAST: {
+        const { message, autoDismiss } = msg;
+        this.addToast({ key: -1, message, autoDismiss });
+        break;
+      }
       default: {
         // do nothing
       }
@@ -114,6 +133,27 @@ export default class Routes extends React.Component<
   onWorkerError(_event: Electron.IpcRendererEvent, err: Error) {
     ipcRenderer.removeAllListeners(CHAN_WORKER_TO_RENDERER);
     this.setState({ waiting: false, workerError: err });
+  }
+
+  addToast(toast: Toast) {
+    this.setState((state) => {
+      const { toastList, numToast } = state;
+      toast.key = numToast;
+      toastList.push(toast);
+      if (toast.autoDismiss) {
+        setTimeout(this.removeToast, 3000, toast.key);
+      }
+      return { toastList, numToast: numToast + 1 };
+    });
+  }
+
+  removeToast(key: number) {
+    this.setState((state) => {
+      const { toastList } = state;
+      const index = toastList.findIndex((toast) => toast.key === key);
+      toastList.splice(index, 1);
+      return { toastList };
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -131,7 +171,13 @@ export default class Routes extends React.Component<
   }
 
   render() {
-    const { resourceList, rateRemaining, waiting, workerError } = this.state;
+    const {
+      resourceList,
+      rateRemaining,
+      waiting,
+      workerError,
+      toastList,
+    } = this.state;
     return (
       <App>
         <Grid>
@@ -177,9 +223,6 @@ export default class Routes extends React.Component<
                       Visit spec repository
                     </Dropdown.Item>
                     <Dropdown.Item
-                      disabled={
-                        rateRemaining !== undefined && rateRemaining === 0
-                      }
                       onClick={() => this.loadFromWeb()}
                       alt={rateRemaining}
                     >
@@ -242,6 +285,20 @@ export default class Routes extends React.Component<
             </Modal.Description>
           </Modal.Content>
         </Modal>
+        <div id="toast">
+          {toastList.map((toast) => {
+            const { key, message } = toast;
+            return (
+              <Message
+                key={key}
+                negative
+                onDismiss={() => this.removeToast(key)}
+              >
+                {message}
+              </Message>
+            );
+          })}
+        </div>
       </App>
     );
   }

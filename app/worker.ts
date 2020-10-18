@@ -48,6 +48,7 @@ import {
   TYPE_FORMAT_SAVE_REQ,
   TYPE_FORMAT_SAVE_PATH,
   MSG_FORMAT_SAVE_PATH,
+  TYPE_TOAST,
 } from './types';
 
 const PROC = <ChildProcess>(<unknown>process);
@@ -199,6 +200,16 @@ function loadFile(msg: MSG_LOAD_FILE_REQ) {
   reportWorkerState();
 }
 
+function sendToast(message: string, autoDismiss: boolean) {
+  PROC.send({
+    src: ID_WORKER,
+    dst: ID_RENDERER,
+    type: TYPE_TOAST,
+    message,
+    autoDismiss,
+  });
+}
+
 function loadFromWeb() {
   reportWorkerState(STATE_WAITING);
   return axios
@@ -254,6 +265,22 @@ function loadFromWeb() {
     })
     .catch((reason) => {
       console.error(reason);
+      const { response } = reason;
+      if (response && response.status === 403) {
+        const { data } = reason.response;
+        if (data) {
+          const message = data.message as string;
+          if (message && message.includes('rate limit')) {
+            sendToast(
+              `Your request is blocked due to too many requests.
+Please try again after an hour.
+Or you can manually download resources via 'Visit spec repository'
+and load them via 'Load local file'.`,
+              false
+            );
+          }
+        }
+      }
     })
     .finally(() => {
       reportRateLimit();
