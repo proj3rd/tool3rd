@@ -303,9 +303,9 @@
   integrity sha512-wfryxy4bE1UivvQKSQDU4/X6dr+i8bctjUjj8Zyt3DQy7NtPizJXT8M52nqpNKL+nq2PW8lxk4ZqLj0fD4B4hQ==
 
 "@babel/parser@^7.6.0", "@babel/parser@^7.9.6":
-  version "7.12.2"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.12.2.tgz#9d2fcf24cafe85333ab0aff9f26b81bba356004d"
-  integrity sha512-LMN+SqTiZEonUw4hQA0A3zG8DnN0E1F4K107LbDDUnC+0chML1rvWgsHloC9weB4RmZweE0uhFq0eGX7Nr/PBQ==
+  version "7.12.3"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.12.3.tgz#a305415ebe7a6c7023b40b5122a0662d928334cd"
+  integrity sha512-kFsOS0IbsuhO5ojF8Hc8z/8vEIOkylVBrjiZUbLTE3XFe0Qi+uu6HjzQixkFaqr0ZPAMZcBVxEwmsnsLPZ2Xsw==
 
 "@babel/plugin-proposal-async-generator-functions@^7.10.4":
   version "7.10.5"
@@ -1713,9 +1713,9 @@
   integrity sha1-aaI6OtKcrwCX8G7aWbNh7i8GOfY=
 
 "@types/node@*":
-  version "14.11.8"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.8.tgz#fe2012f2355e4ce08bca44aeb3abbb21cf88d33f"
-  integrity sha512-KPcKqKm5UKDkaYPTuXSx8wEP7vE9GnuaXIZKijwRYcePpZFDVuy2a57LarFKiORbHOuTOOwYzxVxcUzsh2P2Pw==
+  version "14.11.10"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.10.tgz#8c102aba13bf5253f35146affbf8b26275069bef"
+  integrity sha512-yV1nWZPlMFpoXyoknm4S56y2nlTAuFYaJuQtYRAOU7xA/FJ9RY0Xm7QOkaYMMmr8ESdHIuUb6oQgR/0+2NqlyA==
 
 "@types/node@12", "@types/node@^12.0.12":
   version "12.12.52"
@@ -5481,14 +5481,14 @@ diff-sequences@^26.0.0:
   integrity sha512-JC/eHYEC3aSS0vZGjuoc4vHA0yAQTzhQQldXMeMF+JlxLGJlCO38Gma82NV9gk1jGFz8mDzUMeaKXvjRRdJ2dg==
 
 diff2html@^3.1.11:
-  version "3.1.13"
-  resolved "https://registry.yarnpkg.com/diff2html/-/diff2html-3.1.13.tgz#a50321c55847c9754c874d361cfc0ba2853feeec"
-  integrity sha512-Gs4NbtynANYqkPbbGqZN6zwWJq6JofAb5it76xnEUTpFjWJndaCCjFVUoD7yFjEPB36MtwTtT/ptWcKyD9Vw9g==
+  version "3.1.14"
+  resolved "https://registry.yarnpkg.com/diff2html/-/diff2html-3.1.14.tgz#af5792136b2328a23e17ebaf81320149c9f0639f"
+  integrity sha512-Qot+l+v+aqGcuvJe1C8ZPev17deSyg+DOwICF3m8Ka/C3af1K2Wh2WENYulxv9CQyVhy2VarluR5fMfN5BEHIg==
   dependencies:
     diff "4.0.2"
     hogan.js "3.0.2"
   optionalDependencies:
-    highlight.js "10.1.2"
+    highlight.js "10.2.1"
 
 diff@4.0.2, diff@^4.0.2:
   version "4.0.2"
@@ -5945,9 +5945,9 @@ entities@^1.1.1, entities@~1.1.1:
   integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
 
 entities@^2.0.0:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/entities/-/entities-2.0.3.tgz#5c487e5742ab93c15abb5da22759b8590ec03b7f"
-  integrity sha512-MyoZ0jgnLvB2X3Lg5HqpFmn1kybDiIfEQmKzTb5apr51Rb+T3KdmMiqa70T+bhGnyv7bQ6WMj2QMHpGMmlrUYQ==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-2.1.0.tgz#992d3129cf7df6870b96c57858c249a120f8b8b5"
+  integrity sha512-hCx1oky9PFrJ611mf0ifBLBRW8lUUVRlFolb5gWRfIELabBlbp9xZvrqZLZAs+NxFnbfQoeGd8wDkygjg7U85w==
 
 env-paths@^2.2.0:
   version "2.2.0"
@@ -7527,10 +7527,10 @@ highlight-es@^1.0.0:
     is-es2016-keyword "^1.0.0"
     js-tokens "^3.0.0"
 
-highlight.js@10.1.2:
-  version "10.1.2"
-  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.1.2.tgz#c20db951ba1c22c055010648dfffd7b2a968e00c"
-  integrity sha512-Q39v/Mn5mfBlMff9r+zzA+gWxRsCRKwEMvYTiisLr/XUiFI/4puWt0Ojdko3R3JCNWGdOWaA5g/Yxqa23kC5AA==
+highlight.js@10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.2.1.tgz#09784fe2e95612abbefd510948945d4fe6fa9668"
+  integrity sha512-A+sckVPIb9zQTUydC9lpRX1qRFO/N0OKEh0NwIr65ckvWA/oMY8v9P3+kGRK3w2ULSh9E8v5MszXafodQ6039g==
 
 history@^4.7.2, history@^4.9.0:
   version "4.10.1"
@@ -9263,7 +9263,7 @@ levn@~0.3.0:
 
 "lib3rd@https://github.com/3gpp-network/lib3rd":
   version "1.0.0"
-  resolved "https://github.com/3gpp-network/lib3rd#53d12c842b25311026f2a595665904ed42a2eff5"
+  resolved "https://github.com/3gpp-network/lib3rd#7ee60022390ea3cf412e9174b0fbdd98358af5cb"
   dependencies:
     antlr4ts "^0.5.0-alpha.3"
     cheerio "^1.0.0-rc.3"
