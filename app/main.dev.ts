@@ -15,7 +15,6 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { fork } from 'child_process';
-import MenuBuilder from './menu';
 import {
   ID_RENDERER,
   CHAN_RENDERER_TO_WORKER,
@@ -67,7 +66,7 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
     minWidth: 1200,
-    height: 720,
+    minHeight: 720,
     webPreferences:
       (process.env.NODE_ENV === 'development' ||
         process.env.E2E_BUILD === 'true') &&
@@ -79,6 +78,7 @@ const createWindow = async () => {
             preload: path.join(__dirname, 'dist/renderer.prod.js'),
           },
   });
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
@@ -99,9 +99,6 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
