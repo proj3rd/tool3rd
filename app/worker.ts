@@ -68,6 +68,8 @@ axios.defaults.baseURL =
   'https://api.github.com/repos/3gpp-network/3gpp-specs/contents';
 axios.defaults.auth = { username: '', password: '' };
 
+const ECONNRESET = 'ECONNRESET';
+
 interface IResource {
   resourceId: number;
   name: string;
@@ -265,7 +267,7 @@ function loadFromWeb() {
     })
     .catch((reason) => {
       console.error(reason);
-      const { response } = reason;
+      const { response, code, errno } = reason;
       if (response && response.status === 403) {
         const { data } = reason.response;
         if (data) {
@@ -280,6 +282,14 @@ and load them via 'Load local file'.`,
             );
           }
         }
+      } else if (code === ECONNRESET || errno === ECONNRESET) {
+        sendToast(
+          `Your request is blocked due to network issue.
+Maybe you are behind the proxy.
+Or you can manually download resources via 'Visit spec repository'
+and load them via 'Load local file'.`,
+          false
+        );
       }
     })
     .finally(() => {
