@@ -49,6 +49,7 @@ import {
   TYPE_FORMAT_SAVE_PATH,
   MSG_FORMAT_SAVE_PATH,
   TYPE_TOAST,
+  TYPE_FORMAT_SAVE_CANCEL,
 } from './types';
 
 const PROC = <ChildProcess>(<unknown>process);
@@ -414,6 +415,12 @@ function cancelDiffSave() {
   reportWorkerState();
 }
 
+function cancelFormatSave() {
+  formatted = undefined;
+  reportMemoryUsage();
+  reportWorkerState();
+}
+
 function saveDiff(msg: MSG_DIFF_SAVE_PATH) {
   const { filePath } = msg;
   writeFileSync(filePath, diffRendered);
@@ -504,6 +511,10 @@ process.on('message', (msg) => {
     }
     case TYPE_FORMAT_REQ: {
       format(msg);
+      break;
+    }
+    case TYPE_FORMAT_SAVE_CANCEL: {
+      cancelFormatSave();
       break;
     }
     case TYPE_FORMAT_SAVE_PATH: {

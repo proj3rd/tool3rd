@@ -1,7 +1,7 @@
 {
   "name": "tool3rd",
   "productName": "tool3rd",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "tool3rd",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\" \"yarn build-worker\"",
