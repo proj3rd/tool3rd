@@ -342,6 +342,37 @@ export default class Format extends React.Component<Props, State> {
                 />
               </Grid.Column>
               <Grid.Column>
+                <Button.Group>
+                  <Button disabled active>
+                    Add all
+                  </Button>
+                  <Button
+                    basic
+                    color="green"
+                    disabled={ieList.length === 0}
+                    onClick={() => {
+                      ieList.forEach((ie) => {
+                        const { key } = ie;
+                        this.addToQueue(key, false);
+                      });
+                    }}
+                  >
+                    Normal
+                  </Button>
+                  <Button
+                    basic
+                    color="blue"
+                    disabled={ieList.length === 0}
+                    onClick={() => {
+                      ieList.forEach((ie) => {
+                        const { key } = ie;
+                        this.addToQueue(key, true);
+                      });
+                    }}
+                  >
+                    Expand
+                  </Button>
+                </Button.Group>
                 <Button disabled={disabled} onClick={this.removeAll}>
                   Remove all
                 </Button>
