@@ -134,8 +134,36 @@ export default class Format extends React.Component<Props, State> {
     const { type } = msg;
     switch (type) {
       case TYPE_FORMAT_SAVE_REQ: {
+        const { options, queue } = this.state;
+        let defaultPath = '';
+        if (queue.length === 1) {
+          const { resourceId, ieName, expand } = queue[0];
+          const optionIndex = options.findIndex((option) => {
+            return option.key === resourceId;
+          });
+          const specFileName = options[optionIndex].name;
+          const expandString = expand ? '_expand' : '';
+          defaultPath = `${ieName}_${specFileName}${expandString}`;
+        } else if (queue.length > 1) {
+          const { resourceId: firstResourceId, expand: firstExpand } = queue[0];
+          let specFileName = '';
+          let expandString = '';
+          if (queue.every((item) => item.resourceId === firstResourceId)) {
+            const optionIndex = options.findIndex((option) => {
+              return option.key === firstResourceId;
+            });
+            specFileName = options[optionIndex].name;
+            if (queue.every((item) => item.expand === firstExpand)) {
+              expandString = firstExpand ? '_expand' : '';
+            } else {
+              expandString = '_mixed';
+            }
+            defaultPath = `${specFileName}${expandString}`;
+          }
+        }
         remote.dialog
           .showSaveDialog({
+            defaultPath,
             filters: [
               {
                 name: 'Spreadsheet file',
