@@ -143,7 +143,7 @@ export default class Format extends React.Component<Props, State> {
           });
           const specFileName = options[optionIndex].name;
           const expandString = expand ? '_expand' : '';
-          defaultPath = `${ieName}_${specFileName}${expandString}`;
+          defaultPath = `${ieName}_${specFileName}${expandString}.xlsx`;
         } else if (queue.length > 1) {
           const { resourceId: firstResourceId, expand: firstExpand } = queue[0];
           let specFileName = '';
@@ -158,7 +158,7 @@ export default class Format extends React.Component<Props, State> {
             } else {
               expandString = '_mixed';
             }
-            defaultPath = `${specFileName}${expandString}`;
+            defaultPath = `${specFileName}${expandString}.xlsx`;
           }
         }
         remote.dialog
