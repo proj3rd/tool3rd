@@ -13,6 +13,10 @@ import {
   Button,
   Dropdown,
   Message,
+  Header,
+  Container,
+  Label,
+  List,
 } from 'semantic-ui-react';
 import { ipcRenderer, remote, shell } from 'electron';
 import routes from './constants/routes.json';
@@ -36,6 +40,7 @@ import {
 } from './types';
 import Diff from './containers/Diff';
 import Format from './containers/Format';
+import { version } from './package.json';
 
 type Toast = {
   key: number;
@@ -48,6 +53,7 @@ type State = {
   rateRemaining: number | undefined;
   waiting: boolean;
   workerError: Error | null;
+  showAbout: boolean;
   toastList: Toast[];
   numToast: number;
 };
@@ -65,6 +71,7 @@ export default class Routes extends React.Component<
       rateRemaining: undefined,
       waiting: false,
       workerError: null,
+      showAbout: false,
       toastList: [],
       numToast: 0,
     };
@@ -176,6 +183,7 @@ export default class Routes extends React.Component<
       rateRemaining,
       waiting,
       workerError,
+      showAbout,
       toastList,
     } = this.state;
     return (
@@ -199,10 +207,33 @@ export default class Routes extends React.Component<
                   <Dropdown.Item disabled>Inter-RAT Interference</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
-              <Dropdown item simple text="Help" disabled>
+              <Dropdown item simple text="Help">
                 <Dropdown.Menu>
-                  <Dropdown.Item disabled>Check for updates</Dropdown.Item>
-                  <Dropdown.Item disabled>About</Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      shell.openExternal(
+                        'https://github.com/proj3rd/tool3rd/releases'
+                      );
+                    }}
+                  >
+                    Check for updates
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      shell.openExternal(
+                        'https://github.com/proj3rd/tool3rd/issues'
+                      );
+                    }}
+                  >
+                    Report Bug & Suggest feature
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      this.setState({ showAbout: true });
+                    }}
+                  >
+                    About
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
               <Menu.Menu position="right">
@@ -283,6 +314,40 @@ export default class Routes extends React.Component<
                 </Button>
               </Form>
             </Modal.Description>
+          </Modal.Content>
+        </Modal>
+        <Modal
+          open={showAbout}
+          onClose={() => {
+            this.setState({ showAbout: false });
+          }}
+        >
+          {/* <Modal.Header>tool3rd</Modal.Header> */}
+          <Modal.Content>
+            <Container textAlign="center">
+              <Header as="h1">
+                tool3rd
+                <Label>{version}</Label>
+              </Header>
+              <List bulleted horizontal>
+                <List.Item
+                  as="a"
+                  onClick={() => {
+                    shell.openExternal('https://github.com/proj3rd/tool3rd');
+                  }}
+                >
+                  Project home
+                </List.Item>
+                <List.Item
+                  as="a"
+                  onClick={() => {
+                    shell.openExternal('https://github.com/proj3rd/lib3rd');
+                  }}
+                >
+                  lib3rd
+                </List.Item>
+              </List>
+            </Container>
           </Modal.Content>
         </Modal>
         <div id="toast">
