@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
 import {
@@ -64,6 +65,7 @@ export default class Format extends React.Component<Props, State> {
     this.removeFromQueue = this.removeFromQueue.bind(this);
     this.requestFormat = this.requestFormat.bind(this);
     this.onNameChange = this.onNameChange.bind(this);
+    this.onNameChangeDebounce = this.onNameChangeDebounce.bind(this);
     this.onSpecChange = this.onSpecChange.bind(this);
     this.onIpc = this.onIpc.bind(this);
   }
@@ -105,8 +107,12 @@ export default class Format extends React.Component<Props, State> {
     data: InputOnChangeData
   ) {
     const name = data.value;
-    this.setState({ name });
+    this.onNameChangeDebounce(name);
   }
+
+  onNameChangeDebounce = debounce((name) => {
+    this.setState({ name });
+  }, 1000);
 
   // eslint-disable-next-line class-methods-use-this
   onSpecChange(
