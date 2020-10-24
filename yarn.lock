@@ -9270,7 +9270,7 @@ levn@~0.3.0:
 
 "lib3rd@https://github.com/3gpp-network/lib3rd":
   version "1.0.0"
-  resolved "https://github.com/3gpp-network/lib3rd#4f597c5a883139d821b1a59c6890e2f0d5487165"
+  resolved "https://github.com/3gpp-network/lib3rd#1f36c1679f6e4bda6ec75be7684aad0c704eba60"
   dependencies:
     antlr4ts "^0.5.0-alpha.3"
     cheerio "^1.0.0-rc.3"
