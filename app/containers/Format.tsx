@@ -191,11 +191,10 @@ export default class Format extends React.Component<Props, State> {
         break;
       }
       case TYPE_IE_LIST: {
-        const ieList = msg.ieList.map((ie: string) => ({
-          key: ie,
-          text: ie,
-          value: ie,
-          staged: false,
+        const ieList = msg.ieList.map((ie: { name: string; key: string }) => ({
+          key: ie.key,
+          text: ie.name,
+          value: ie.key,
         }));
         this.setState({ ieList });
         break;
@@ -303,18 +302,6 @@ export default class Format extends React.Component<Props, State> {
     });
   }
 
-  toggleStaged(key: string) {
-    this.setState((state) => {
-      const ieList = state.ieList.map((ie) => {
-        if (ie.key === key) {
-          ie.staged = !ie.staged;
-        }
-        return ie;
-      });
-      return { ieList };
-    });
-  }
-
   render() {
     const { options, name, ieList, queue, isMessageVisible } = this.state;
     const disabled = queue.length === 0;
@@ -406,12 +393,10 @@ export default class Format extends React.Component<Props, State> {
                     </Table.Header>
                     <Table.Body>
                       {ieList
-                        .filter(
-                          (ie) =>
-                            !ie.staged &&
-                            (ie.text as string)
-                              .toLowerCase()
-                              .includes(name.toLowerCase())
+                        .filter((ie) =>
+                          (ie.text as string)
+                            .toLowerCase()
+                            .includes(name.toLowerCase())
                         )
                         .map((ie) => {
                           const { key } = ie;

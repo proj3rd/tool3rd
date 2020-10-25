@@ -461,7 +461,7 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
     todo();
   }
   const { type } = resource;
-  const ieList: string[] = [];
+  const ieList: { name: string; key: string }[] = [];
   if (type === TYPE_ASN1) {
     if (!(resource.modules instanceof Modules)) {
       unreach();
@@ -471,7 +471,9 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
         if (assignment instanceof ValueAssignment) {
           return;
         }
-        ieList.push(assignment.name);
+        const { name } = assignment;
+        const key = name;
+        ieList.push({ name, key });
       });
     });
   } else if (type === TYPE_TAB) {
@@ -479,7 +481,8 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
       unreach();
     }
     resource.modules.definitionList.forEach((definition) => {
-      ieList.push(definition.name);
+      const { sectionNumber: key, name } = definition;
+      ieList.push({ name, key });
     });
   }
   PROC.send({

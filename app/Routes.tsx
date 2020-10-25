@@ -325,10 +325,10 @@ export default class Routes extends React.Component<
           {/* <Modal.Header>tool3rd</Modal.Header> */}
           <Modal.Content>
             <Container textAlign="center">
-              <Header as="h1">
-                tool3rd
+              <Header as="h1">tool3rd</Header>
+              <div>
                 <Label>{version}</Label>
-              </Header>
+              </div>
               <List bulleted horizontal>
                 <List.Item
                   as="a"
