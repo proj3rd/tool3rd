@@ -375,14 +375,15 @@ function format(msg: MSG_FORMAT_REQ) {
   const { queue } = msg;
   formatted = getWorkbook();
   queue.forEach((item) => {
-    const { resourceId, ieName, expand } = item;
+    const { resourceId, ieKey, expand } = item;
     const resource = findResource(resourceId);
     if (resource === undefined) {
       return;
     }
     const { modules } = resource;
     if (modules instanceof Modules) {
-      const assignment = modules.findAssignment(ieName);
+      const [moduleName, assignmentName] = ieKey.split('.');
+      const assignment = modules.findAssignment(assignmentName, moduleName);
       if (assignment === undefined || assignment instanceof ValueAssignment) {
         return;
       }
@@ -392,7 +393,7 @@ function format(msg: MSG_FORMAT_REQ) {
       assignmentNew.toSpreadsheet(formatted);
     }
     if (modules instanceof Definitions) {
-      const definition = modules.findDefinition(ieName);
+      const definition = modules.findDefinition(ieKey);
       if (definition === undefined) {
         return;
       }
@@ -467,12 +468,13 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
       unreach();
     }
     resource.modules.modules.forEach((module) => {
+      const { name: moduleName } = module;
       module.assignments.forEach((assignment) => {
         if (assignment instanceof ValueAssignment) {
           return;
         }
         const { name } = assignment;
-        const key = name;
+        const key = `${moduleName}.${name}`;
         ieList.push({ name, key });
       });
     });

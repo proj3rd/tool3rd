@@ -50,7 +50,7 @@ export type MSG_FORMAT_SAVE_PATH = {
 
 export type FormatQueueItem = {
   resourceId: number;
-  ieName: string;
+  ieKey: string;
   expand: boolean;
 };
 

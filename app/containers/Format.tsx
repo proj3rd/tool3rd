@@ -40,7 +40,13 @@ type State = {
   resourceId: number | undefined;
   name: string;
   ieList: DropdownItemProps[];
-  queue: { key: string; resourceId: number; ieName: string; expand: boolean }[];
+  queue: {
+    key: string;
+    resourceId: number;
+    ieKey: string;
+    ieName: string;
+    expand: boolean;
+  }[];
   isMessageVisible: boolean;
 };
 
@@ -243,14 +249,20 @@ export default class Format extends React.Component<Props, State> {
 
   // eslint-disable-next-line class-methods-use-this
   addToQueue(key: string, expand: boolean) {
-    const { resourceId, queue } = this.state;
+    const { resourceId, ieList, queue } = this.state;
     if (resourceId === undefined) {
       return;
     }
+    const ie = ieList.find((item) => item.key === key);
+    if (ie === undefined) {
+      return;
+    }
+    const ieName = ie.text as string;
     const item = {
       key: `${resourceId}_${key}_${expand}`,
       resourceId,
-      ieName: key,
+      ieKey: key,
+      ieName,
       expand,
     };
     const itemInQueue = queue.find((i) => {
@@ -291,8 +303,8 @@ export default class Format extends React.Component<Props, State> {
   requestFormat() {
     const { queue } = this.state;
     const queueNew = queue.map((item) => {
-      const { resourceId, ieName, expand } = item;
-      return { resourceId, ieName, expand };
+      const { resourceId, ieKey, expand } = item;
+      return { resourceId, ieKey, expand };
     });
     ipcRenderer.send(CHAN_RENDERER_TO_WORKER, {
       src: ID_RENDERER,
