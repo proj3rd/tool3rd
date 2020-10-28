@@ -31,6 +31,15 @@ import {
   TYPE_WORK_COMPLETE,
 } from '../types';
 
+type QueueItem = {
+  key: string;
+  resourceId: number;
+  indexInResource: number;
+  ieKey: string;
+  ieName: string;
+  expand: boolean;
+};
+
 type Props = {
   resourceList: Resource[];
 };
@@ -40,13 +49,7 @@ type State = {
   resourceId: number | undefined;
   name: string;
   ieList: DropdownItemProps[];
-  queue: {
-    key: string;
-    resourceId: number;
-    ieKey: string;
-    ieName: string;
-    expand: boolean;
-  }[];
+  queue: QueueItem[];
   isMessageVisible: boolean;
 };
 
@@ -253,14 +256,16 @@ export default class Format extends React.Component<Props, State> {
     if (resourceId === undefined) {
       return;
     }
-    const ie = ieList.find((item) => item.key === key);
-    if (ie === undefined) {
+    const index = ieList.findIndex((ie) => ie.key === key);
+    if (index === -1) {
       return;
     }
+    const ie = ieList[index];
     const ieName = ie.text as string;
-    const item = {
+    const item: QueueItem = {
       key: `${resourceId}_${key}_${expand}`,
       resourceId,
+      indexInResource: index,
       ieKey: key,
       ieName,
       expand,
@@ -273,10 +278,16 @@ export default class Format extends React.Component<Props, State> {
     }
     this.setState((state) => {
       const queueNew = [...state.queue, item].sort((a, b) => {
-        if (a.key < b.key) {
+        if (a.resourceId < b.resourceId) {
           return -1;
         }
-        if (a.key > b.key) {
+        if (a.resourceId > b.resourceId) {
+          return 1;
+        }
+        if (a.indexInResource < b.indexInResource) {
+          return -1;
+        }
+        if (a.indexInResource > b.indexInResource) {
           return 1;
         }
         return 0;
