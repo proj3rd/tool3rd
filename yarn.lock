@@ -1713,9 +1713,9 @@
   integrity sha1-aaI6OtKcrwCX8G7aWbNh7i8GOfY=
 
 "@types/node@*":
-  version "14.14.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.5.tgz#e92d3b8f76583efa26c1a63a21c9d3c1143daa29"
-  integrity sha512-H5Wn24s/ZOukBmDn03nnGTp18A60ny9AmCwnEcgJiTgSGsCO7k+NWP7zjCCbhlcnVCoI+co52dUAt9GMhOSULw==
+  version "14.14.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.6.tgz#146d3da57b3c636cc0d1769396ce1cfa8991147f"
+  integrity sha512-6QlRuqsQ/Ox/aJEQWBEJG7A9+u7oSYl3mem/K8IzxXG/kAGbV1YPD9Bg9Zw3vyxC/YP+zONKwy8hGkSt1jxFMw==
 
 "@types/node@12", "@types/node@^12.0.12":
   version "12.12.52"
@@ -5481,9 +5481,9 @@ diff-sequences@^26.0.0:
   integrity sha512-JC/eHYEC3aSS0vZGjuoc4vHA0yAQTzhQQldXMeMF+JlxLGJlCO38Gma82NV9gk1jGFz8mDzUMeaKXvjRRdJ2dg==
 
 diff2html@^3.1.11:
-  version "3.1.14"
-  resolved "https://registry.yarnpkg.com/diff2html/-/diff2html-3.1.14.tgz#af5792136b2328a23e17ebaf81320149c9f0639f"
-  integrity sha512-Qot+l+v+aqGcuvJe1C8ZPev17deSyg+DOwICF3m8Ka/C3af1K2Wh2WENYulxv9CQyVhy2VarluR5fMfN5BEHIg==
+  version "3.1.15"
+  resolved "https://registry.yarnpkg.com/diff2html/-/diff2html-3.1.15.tgz#527cc59e4dc891293f1deb31e9ebcc9a8ee5aefa"
+  integrity sha512-juAPno3aLDhLV6e2rPl1uQ3ZHpFT4o5Hpx5il4EH+nbdphwGgK1a7dQ/BnSXWlNPvEZ5l8lE5CTHijx5QPLzOQ==
   dependencies:
     diff "4.0.2"
     hogan.js "3.0.2"
@@ -9270,7 +9270,7 @@ levn@~0.3.0:
 
 "lib3rd@https://github.com/3gpp-network/lib3rd":
   version "1.0.0"
-  resolved "https://github.com/3gpp-network/lib3rd#13191a8c91b2bcafa252d685ed2d06010d2bf1b7"
+  resolved "https://github.com/3gpp-network/lib3rd#8e0dde1187ae407aeda188b3087b35689cb616ed"
   dependencies:
     antlr4ts "^0.5.0-alpha.3"
     cheerio "^1.0.0-rc.3"
