@@ -191,7 +191,9 @@ export default class Routes extends React.Component<
         <Grid>
           <Grid.Column width={13} id="main">
             <Menu>
-              <Menu.Item header>tool3rd</Menu.Item>
+              <Link to="/">
+                <Menu.Item header>tool3rd</Menu.Item>
+              </Link>
               <Dropdown item simple text="Message">
                 <Dropdown.Menu>
                   <Link to={routes.FORMAT}>
