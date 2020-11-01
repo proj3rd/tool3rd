@@ -247,6 +247,15 @@ export default class Routes extends React.Component<
                     <Dropdown.Item
                       onClick={() => {
                         shell.openExternal(
+                          'https://github.com/proj3rd/3gpp-specs/archive/master.zip'
+                        );
+                      }}
+                    >
+                      Download spec archive
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => {
+                        shell.openExternal(
                           'https://github.com/3gpp-network/3gpp-specs/'
                         );
                       }}
