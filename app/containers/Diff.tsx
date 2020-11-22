@@ -6,8 +6,10 @@ import {
   Message,
   Grid,
   Form,
+  Button,
+  Icon,
 } from 'semantic-ui-react';
-import { remote, ipcRenderer } from 'electron';
+import { remote, ipcRenderer, shell } from 'electron';
 import { Resource } from '../components/ResourceItem';
 import {
   CHAN_RENDERER_TO_WORKER,
@@ -29,6 +31,7 @@ type State = {
   options: { key: number; text: string; value: number; name: string }[];
   valueOld: number | undefined;
   valueNew: number | undefined;
+  filePath: string;
   isMessageVisible: boolean;
 };
 
@@ -44,6 +47,7 @@ export default class Diff extends React.Component<Props, State> {
       options,
       valueOld: undefined,
       valueNew: undefined,
+      filePath: '',
       isMessageVisible: false,
     };
     this.requestDiff = this.requestDiff.bind(this);
@@ -112,6 +116,7 @@ export default class Diff extends React.Component<Props, State> {
                 type: TYPE_DIFF_SAVE_PATH,
                 filePath,
               });
+              this.setState({ filePath });
             }
           })
           .catch(() => {
@@ -123,7 +128,7 @@ export default class Diff extends React.Component<Props, State> {
         this.setState({ isMessageVisible: true });
         this.timer = window.setTimeout(() => {
           this.setState({ isMessageVisible: false });
-        }, 3000);
+        }, 10000);
         break;
       }
       default: {
@@ -173,7 +178,13 @@ export default class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { options, valueOld, valueNew, isMessageVisible } = this.state;
+    const {
+      options,
+      valueOld,
+      valueNew,
+      filePath,
+      isMessageVisible,
+    } = this.state;
     const disabled =
       valueOld === undefined || valueNew === undefined || valueOld === valueNew;
     return (
@@ -211,7 +222,39 @@ export default class Diff extends React.Component<Props, State> {
             </Grid.Row>
           </Grid>
         </Form>
-        {isMessageVisible ? <Message positive>Diff success</Message> : <></>}
+        {isMessageVisible ? (
+          <Message positive>
+            <Message.Header>Diff success</Message.Header>
+            <Message.Content>
+              <Button
+                icon
+                size="tiny"
+                basic
+                color="green"
+                onClick={() => {
+                  shell.openExternal(filePath);
+                }}
+              >
+                <Icon name="file text" />
+                Open file
+              </Button>
+              <Button
+                icon
+                size="tiny"
+                basic
+                color="blue"
+                onClick={() => {
+                  shell.showItemInFolder(filePath);
+                }}
+              >
+                <Icon name="folder" />
+                Open folder
+              </Button>
+            </Message.Content>
+          </Message>
+        ) : (
+          <></>
+        )}
       </Segment>
     );
   }

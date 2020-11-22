@@ -1,5 +1,4 @@
 import { debounce } from 'lodash';
-/* eslint-disable jsx-a11y/label-has-associated-control */
 import React from 'react';
 import {
   Segment,
@@ -14,8 +13,9 @@ import {
   Table,
   Label,
   Input,
+  Icon,
 } from 'semantic-ui-react';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer, remote, shell } from 'electron';
 import { Resource } from '../components/ResourceItem';
 import {
   CHAN_WORKER_TO_RENDERER,
@@ -50,6 +50,7 @@ type State = {
   name: string;
   ieList: DropdownItemProps[];
   queue: QueueItem[];
+  filePath: string;
   isMessageVisible: boolean;
 };
 
@@ -67,6 +68,7 @@ export default class Format extends React.Component<Props, State> {
       name: '',
       ieList: [],
       queue: [],
+      filePath: '',
       isMessageVisible: false,
     };
     this.addToQueue = this.addToQueue.bind(this);
@@ -192,6 +194,7 @@ export default class Format extends React.Component<Props, State> {
                 type: TYPE_FORMAT_SAVE_PATH,
                 filePath,
               });
+              this.setState({ filePath });
             }
           })
           .catch(() => {
@@ -212,7 +215,7 @@ export default class Format extends React.Component<Props, State> {
         this.setState({ isMessageVisible: true });
         this.timer = window.setTimeout(() => {
           this.setState({ isMessageVisible: false });
-        }, 3000);
+        }, 10000);
         break;
       }
       default: {
@@ -326,7 +329,14 @@ export default class Format extends React.Component<Props, State> {
   }
 
   render() {
-    const { options, name, ieList, queue, isMessageVisible } = this.state;
+    const {
+      options,
+      name,
+      ieList,
+      queue,
+      filePath,
+      isMessageVisible,
+    } = this.state;
     const disabled = queue.length === 0;
     return (
       <Segment>
@@ -397,7 +407,35 @@ export default class Format extends React.Component<Props, State> {
             <Grid.Row columns={1}>
               <Grid.Column>
                 {isMessageVisible ? (
-                  <Message positive>Format success</Message>
+                  <Message positive>
+                    <Message.Header>Format success</Message.Header>
+                    <Message.Content>
+                      <Button
+                        icon
+                        size="tiny"
+                        basic
+                        color="green"
+                        onClick={() => {
+                          shell.openExternal(filePath);
+                        }}
+                      >
+                        <Icon name="file excel" />
+                        Open file
+                      </Button>
+                      <Button
+                        icon
+                        size="tiny"
+                        basic
+                        color="blue"
+                        onClick={() => {
+                          shell.showItemInFolder(filePath);
+                        }}
+                      >
+                        <Icon name="folder" />
+                        Open folder
+                      </Button>
+                    </Message.Content>
+                  </Message>
                 ) : (
                   <></>
                 )}
