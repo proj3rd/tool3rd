@@ -374,6 +374,9 @@ function format(msg: MSG_FORMAT_REQ) {
   reportWorkerState(STATE_WAITING);
   const { queue } = msg;
   formatted = getWorkbook();
+  const sheetToc = formatted.addWorksheet('Contents');
+  const nameList: string[] = [];
+  const sheetnameList: string[] = [];
   queue.forEach((item) => {
     const { resourceId, ieKey, expand } = item;
     const resource = findResource(resourceId);
@@ -391,6 +394,7 @@ function format(msg: MSG_FORMAT_REQ) {
         ? cloneDeep(assignment).expand(modules)
         : assignment;
       assignmentNew.toSpreadsheet(formatted);
+      nameList.push(assignmentName);
     }
     if (modules instanceof Definitions) {
       const definition = modules.findDefinition(ieKey);
@@ -401,8 +405,28 @@ function format(msg: MSG_FORMAT_REQ) {
         ? cloneDeep(definition).expand(modules)
         : definition;
       definitionNew.toSpreadsheet(formatted);
+      nameList.push(definition.name);
+    }
+    if (formatted) {
+      const sheetCount = formatted.worksheets.length;
+      const lastSheet = formatted.worksheets[sheetCount - 1];
+      sheetnameList.push(lastSheet.name);
     }
   });
+  const maxLength = nameList.reduce((prevLength, name, index) => {
+    const row = sheetToc.addRow([
+      {
+        text: name,
+        hyperlink: `#'${sheetnameList[index]}'!A1`,
+      },
+    ]);
+    row.font = {
+      color: { argb: 'FF0000FF' },
+      underline: true,
+    };
+    return Math.max(prevLength, name.length);
+  }, 0);
+  sheetToc.columns[0].width = maxLength;
   PROC.send({
     src: ID_WORKER,
     dst: ID_RENDERER,
