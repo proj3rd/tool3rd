@@ -9268,9 +9268,9 @@ levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-"lib3rd@https://github.com/3gpp-network/lib3rd":
+"lib3rd@https://github.com/proj3rd/lib3rd":
   version "1.0.0"
-  resolved "https://github.com/3gpp-network/lib3rd#8e0dde1187ae407aeda188b3087b35689cb616ed"
+  resolved "https://github.com/proj3rd/lib3rd#870f3508d53bc818e4ca85bf4b7ad4c38bd4856f"
   dependencies:
     antlr4ts "^0.5.0-alpha.3"
     cheerio "^1.0.0-rc.3"

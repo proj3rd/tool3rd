@@ -1,7 +1,7 @@
 {
   "name": "tool3rd",
   "productName": "tool3rd",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "tool3rd",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\" \"yarn build-worker\"",
@@ -268,7 +268,7 @@
     "electron-log": "^4.2.2",
     "electron-updater": "^4.3.1",
     "history": "^4.7.2",
-    "lib3rd": "https://github.com/3gpp-network/lib3rd",
+    "lib3rd": "https://github.com/proj3rd/lib3rd",
     "lodash": "^4.17.20",
     "react": "^16.13.1",
     "react-dom": "^16.12.0",
