@@ -105,15 +105,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/3gpp-network/tool3rd.git"
+    "url": "git+https://github.com/proj3rd/tool3rd.git"
   },
   "author": {
-    "name": "3GPP.Network",
-    "url": "https://github.com/3gpp-network"
+    "name": "Project 3rd",
+    "url": "https://github.com/proj3rd",
+    "email": "sjeon87+proj3rd@gmail.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/3gpp-network/tool3rd/issues"
+    "url": "https://github.com/proj3rd/tool3rd/issues"
   },
   "keywords": [
     "electron",
@@ -127,7 +128,7 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/3gpp-network/tool3rd#readme",
+  "homepage": "https://github.com/proj3rd/tool3rd#readme",
   "jest": {
     "testURL": "http://localhost/",
     "moduleNameMapper": {

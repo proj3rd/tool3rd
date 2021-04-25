@@ -5,8 +5,9 @@
   "description": "tool3rd",
   "main": "./main.prod.js",
   "author": {
-    "name": "3GPP.Network",
-    "url": "https://github.com/3gpp-network"
+    "name": "Project 3rd",
+    "url": "https://github.com/proj3rd",
+    "email": "sjeon87+proj3rd@gmail.com"
   },
   "scripts": {
     "electron-rebuild": "node -r ../internals/scripts/BabelRegister.js ../internals/scripts/ElectronRebuild.js",
