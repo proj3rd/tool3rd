@@ -2347,10 +2347,10 @@ ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-antlr4ts@^0.5.0-alpha.3:
-  version "0.5.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/antlr4ts/-/antlr4ts-0.5.0-alpha.3.tgz#fa6d39d88d6b96341a8afef45867af9abcb38766"
-  integrity sha512-La89tKkGcHFIVuruv4Bm1esc3zLmES2NOTEwwNS1pudz+zx/0FNqQeUu9p48i9/QHKPVqjN87LB+q3buTg7oDQ==
+antlr4ts@^0.5.0-alpha.4:
+  version "0.5.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/antlr4ts/-/antlr4ts-0.5.0-alpha.4.tgz#71702865a87478ed0b40c0709f422cf14d51652a"
+  integrity sha512-WPQDt1B74OfPv/IMS2ekXAKkTZIHl88uMetg6q3OTqgFxZ/dxDXI0EWLyZid/1Pe6hTftyg5N7gel5wNAGxXyQ==
 
 anymatch@^2.0.0:
   version "2.0.0"
@@ -9270,9 +9270,9 @@ levn@~0.3.0:
 
 "lib3rd@https://github.com/proj3rd/lib3rd":
   version "1.0.0"
-  resolved "https://github.com/proj3rd/lib3rd#870f3508d53bc818e4ca85bf4b7ad4c38bd4856f"
+  resolved "https://github.com/proj3rd/lib3rd#0e00eedb58be7a6706c4c581a833ad083f009f42"
   dependencies:
-    antlr4ts "^0.5.0-alpha.3"
+    antlr4ts "^0.5.0-alpha.4"
     cheerio "^1.0.0-rc.3"
     diff "^4.0.2"
     diff2html "^3.1.11"
