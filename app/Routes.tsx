@@ -295,7 +295,7 @@ export default class Routes extends React.Component<
             </Item.Group>
             <input
               type="file"
-              accept=".asn1,.htm,.html"
+              accept=".asn1,.json,.htm,.html"
               hidden
               ref={this.fileInputRef}
               onChange={this.onFileChange}

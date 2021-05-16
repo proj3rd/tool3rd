@@ -55,6 +55,7 @@ import {
 const PROC = <ChildProcess>(<unknown>process);
 
 const TYPE_ASN1 = 'asn1';
+const TYPE_JSON = 'json';
 const TYPE_TAB = 'tab';
 
 const template =
@@ -76,7 +77,7 @@ interface IResource {
   name: string;
   location: string;
   loaded: boolean;
-  type: 'asn1' | 'tab';
+  type: 'asn1' | 'json' | 'tab';
   modules: Modules | Definitions | null;
 }
 
@@ -180,15 +181,37 @@ function reportWorkerState(state?: string) {
   });
 }
 
-function loadFile(msg: MSG_LOAD_FILE_REQ) {
+async function loadFile(msg: MSG_LOAD_FILE_REQ) {
   reportWorkerState(STATE_WAITING);
   const { location } = msg;
   const { base: name, ext } = parse(location);
   if (!resourceExists(name, location)) {
     const content = readFileSync(location, 'utf8');
-    const type = ext.includes('asn') ? TYPE_ASN1 : TYPE_TAB;
-    const modules =
-      type === TYPE_ASN1 ? asn1.parse(content) : ran3.parse(content);
+    const obj = JSON.parse(content);
+    // eslint-disable-next-line no-nested-ternary
+    const type = ext.includes('asn')
+      ? TYPE_ASN1
+      : ext.includes('json')
+      ? TYPE_JSON
+      : TYPE_TAB;
+    let modules = null;
+    if (type === TYPE_JSON) {
+      try {
+        modules = Definitions.fromObject(obj);
+      } catch (e) {
+        console.error(e);
+      }
+      if (!modules) {
+        try {
+          modules = Modules.fromObject(obj);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    } else {
+      modules = type === TYPE_ASN1 ? asn1.parse(content) : ran3.parse(content);
+    }
+    // TODO: Handle if modules === undefined
     resourceList.push({
       resourceId: resourceList.length,
       name,
@@ -318,7 +341,23 @@ function setResourceState(msg: MSG_RESOURCE_STATE_REQ) {
       getResourceContent(resource.location)
         .then((content) => {
           // eslint-disable-next-line promise/always-return
-          if (resource.type === TYPE_ASN1) {
+          if (resource.type === TYPE_JSON) {
+            const obj = JSON.parse(content);
+            try {
+              console.log('Trying to deserialize into RAN3 tabular');
+              resource.modules = Definitions.fromObject(obj);
+            } catch (e) {
+              console.error(e);
+            }
+            if (!resource.modules) {
+              try {
+                console.log('Trying to deserialize into ASN.1');
+                resource.modules = Modules.fromObject(obj);
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          } else if (resource.type === TYPE_ASN1) {
             resource.modules = asn1.parse(content);
           } else if (resource.type === TYPE_TAB) {
             resource.modules = ran3.parse(content);
@@ -487,7 +526,28 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
   }
   const { type } = resource;
   const ieList: { name: string; key: string }[] = [];
-  if (type === TYPE_ASN1) {
+  if (type === TYPE_JSON) {
+    if (resource.modules instanceof Definitions) {
+      resource.modules.definitionList.forEach((definition) => {
+        const { sectionNumber: key, name } = definition;
+        ieList.push({ name, key });
+      });
+    } else if (resource.modules instanceof Modules) {
+      resource.modules.modules.forEach((module) => {
+        const { name: moduleName } = module;
+        module.assignments.forEach((assignment) => {
+          if (assignment instanceof ValueAssignment) {
+            return;
+          }
+          const { name } = assignment;
+          const key = `${moduleName}.${name}`;
+          ieList.push({ name, key });
+        });
+      });
+    } else {
+      unreach();
+    }
+  } else if (type === TYPE_ASN1) {
     if (!(resource.modules instanceof Modules)) {
       unreach();
     }
