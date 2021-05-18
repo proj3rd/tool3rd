@@ -187,7 +187,6 @@ async function loadFile(msg: MSG_LOAD_FILE_REQ) {
   const { base: name, ext } = parse(location);
   if (!resourceExists(name, location)) {
     const content = readFileSync(location, 'utf8');
-    const obj = JSON.parse(content);
     // eslint-disable-next-line no-nested-ternary
     const type = ext.includes('asn')
       ? TYPE_ASN1
@@ -196,6 +195,7 @@ async function loadFile(msg: MSG_LOAD_FILE_REQ) {
       : TYPE_TAB;
     let modules = null;
     if (type === TYPE_JSON) {
+      const obj = JSON.parse(content);
       try {
         modules = Definitions.fromObject(obj);
       } catch (e) {
