@@ -1,7 +1,7 @@
 {
   "name": "tool3rd",
   "productName": "tool3rd",
-  "version": "1.9.3-alpha",
+  "version": "1.10.0",
   "description": "tool3rd",
   "main": "./main.prod.js",
   "author": {
