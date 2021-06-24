@@ -67,7 +67,7 @@ const template =
     : readFileSync(`${__dirname}/diff.pug`, 'utf8');
 
 axios.defaults.baseURL =
-  'https://api.github.com/repos/3gpp-network/3gpp-specs/contents';
+  'https://api.github.com/repos/proj3rd/3gpp-specs/contents';
 axios.defaults.auth = { username: '', password: '' };
 
 const ECONNRESET = 'ECONNRESET';

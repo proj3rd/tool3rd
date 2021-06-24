@@ -174,7 +174,7 @@ export default class Routes extends React.Component<
 
   // eslint-disable-next-line class-methods-use-this
   openIssueTracker() {
-    remote.shell.openExternal('https://github.com/3gpp-network/tool3rd/issues');
+    remote.shell.openExternal('https://github.com/proj3rd/tool3rd/issues');
   }
 
   render() {
@@ -249,7 +249,7 @@ export default class Routes extends React.Component<
                     <Dropdown.Item
                       onClick={() => {
                         shell.openExternal(
-                          'https://github.com/proj3rd/3gpp-specs/archive/master.zip'
+                          'https://github.com/proj3rd/3gpp-specs-in-json/archive/master.zip'
                         );
                       }}
                     >
@@ -258,18 +258,18 @@ export default class Routes extends React.Component<
                     <Dropdown.Item
                       onClick={() => {
                         shell.openExternal(
-                          'https://github.com/3gpp-network/3gpp-specs/'
+                          'https://github.com/proj3rd/3gpp-specs-in-json/'
                         );
                       }}
                     >
                       Visit spec repository
                     </Dropdown.Item>
-                    <Dropdown.Item
+                    {/* <Dropdown.Item
                       onClick={() => this.loadFromWeb()}
                       alt={rateRemaining}
                     >
                       Load resources from cloud
-                    </Dropdown.Item>
+                    </Dropdown.Item> */}
                   </Dropdown.Menu>
                 </Dropdown>
               </Menu.Menu>
