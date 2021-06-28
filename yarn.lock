@@ -9350,7 +9350,7 @@ levn@~0.3.0:
 
 lib3rd@proj3rd/lib3rd#develop:
   version "1.0.0"
-  resolved "https://codeload.github.com/proj3rd/lib3rd/tar.gz/1286315104b34f94f45b034e2f1b32da89409d32"
+  resolved "https://codeload.github.com/proj3rd/lib3rd/tar.gz/d037f6ebc08a7809ab2b1eaa1ca3e666bbf758d0"
   dependencies:
     antlr4ts "^0.5.0-alpha.4"
     cheerio "^1.0.0-rc.6"
