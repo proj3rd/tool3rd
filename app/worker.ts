@@ -8,7 +8,6 @@ import { cloneDeep } from 'lodash';
 import { parse } from 'path';
 import 'regenerator-runtime/runtime';
 import { getHeapStatistics } from 'v8';
-import { RateLimit } from 'github-rest.d.ts/dist/rateLimit';
 import {
   ContentDirectory,
   ContentDirectoryItem,
@@ -19,6 +18,7 @@ import { Definitions } from 'lib3rd/dist/ran3/classes/definitions';
 import { todo, unreach } from 'unimpl';
 import { ChildProcess } from 'child_process';
 import { getWorkbook } from 'lib3rd/dist/common/spreadsheet';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import {
   ID_WORKER,
   ID_RENDERER,
@@ -27,7 +27,6 @@ import {
   TYPE_MEMORY_USAGE,
   TYPE_STATE,
   STATE_WAITING,
-  TYPE_RATE_LIMIT,
   TYPE_RESOURCE_LIST,
   TYPE_RESOURCE_STATE_REQ,
   TYPE_DIFF_REQ,
@@ -50,9 +49,17 @@ import {
   MSG_FORMAT_SAVE_PATH,
   TYPE_TOAST,
   TYPE_FORMAT_SAVE_CANCEL,
+  ID_MAIN,
+  TYPE_SETTINGS,
 } from './types';
 
 const PROC = <ChildProcess>(<unknown>process);
+
+PROC.send({
+  src: ID_WORKER,
+  dst: ID_MAIN,
+  type: TYPE_SETTINGS,
+});
 
 const TYPE_ASN1 = 'asn1';
 const TYPE_JSON = 'json';
@@ -67,8 +74,7 @@ const template =
     : readFileSync(`${__dirname}/diff.pug`, 'utf8');
 
 axios.defaults.baseURL =
-  'https://api.github.com/repos/proj3rd/3gpp-specs/contents';
-axios.defaults.auth = { username: '', password: '' };
+  'https://cdn.jsdelivr.net/gh/proj3rd';
 
 const ECONNRESET = 'ECONNRESET';
 
@@ -91,27 +97,6 @@ function filterHiddenFiles(contents: ContentDirectory): ContentDirectoryItem[] {
 
 function findResource(resourceId: number): IResource | undefined {
   return resourceList.find((resource) => resource.resourceId === resourceId);
-}
-
-function reportRateLimit() {
-  axios
-    .get('https://api.github.com/rate_limit')
-    .then((value) => {
-      const { data } = value;
-      const { rate } = data as RateLimit;
-      const { limit, remaining } = rate;
-      (<ChildProcess>(<unknown>process)).send({
-        srd: ID_WORKER,
-        dst: ID_RENDERER,
-        type: TYPE_RATE_LIMIT,
-        limit,
-        remaining,
-      });
-      return true;
-    })
-    .catch((reason) => {
-      console.error(reason);
-    });
 }
 
 async function getResourceContent(location: string) {
@@ -317,7 +302,6 @@ and load them via 'Load local file'.`,
       }
     })
     .finally(() => {
-      reportRateLimit();
       reportResourceList();
       reportMemoryUsage();
       reportWorkerState();
@@ -368,7 +352,6 @@ function setResourceState(msg: MSG_RESOURCE_STATE_REQ) {
           console.error(reason);
         })
         .finally(() => {
-          reportRateLimit();
           reportResourceList();
           reportMemoryUsage();
           reportWorkerState();
@@ -628,6 +611,22 @@ process.on('message', (msg) => {
     }
     case TYPE_RESOURCE_STATE_REQ: {
       setResourceState(msg);
+      break;
+    }
+    case TYPE_SETTINGS: {
+      const { settings } = msg;
+      const { proxy } = settings;
+      const { use, https, rejectUnauthorized } = proxy;
+      if (use) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = Number(rejectUnauthorized).toString();
+        const httpsProxyAgent = new HttpsProxyAgent({
+          protocol: https.protocol,
+          host: https.host,
+          port: https.port,
+          rejectUnauthorized,
+        });
+        axios.defaults.httpsAgent = httpsProxyAgent;
+      }
       break;
     }
     default: {

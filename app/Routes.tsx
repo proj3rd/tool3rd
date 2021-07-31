@@ -17,8 +17,10 @@ import {
   Container,
   Label,
   List,
+  Icon,
 } from 'semantic-ui-react';
-import { ipcRenderer, remote, shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
+import * as remote from '@electron/remote';
 import routes from './constants/routes.json';
 import App from './containers/App';
 import HomePage from './containers/HomePage';
@@ -34,9 +36,11 @@ import {
   ID_RENDERER,
   ID_WORKER,
   TYPE_LOAD_FROM_WEB_REQ,
-  TYPE_RATE_LIMIT,
   TYPE_LOAD_FILE_REQ,
   TYPE_TOAST,
+  ID_MAIN,
+  TYPE_EDIT_SETTINGS,
+  CHAN_RENDERER_TO_MAIN,
 } from './types';
 import Diff from './containers/Diff';
 import Format from './containers/Format';
@@ -50,7 +54,6 @@ type Toast = {
 
 type State = {
   resourceList: Resource[];
-  rateRemaining: number | undefined;
   waiting: boolean;
   workerError: Error | null;
   showAbout: boolean;
@@ -68,7 +71,6 @@ export default class Routes extends React.Component<
     super(props);
     this.state = {
       resourceList: [],
-      rateRemaining: undefined,
       waiting: false,
       workerError: null,
       showAbout: false,
@@ -107,6 +109,14 @@ export default class Routes extends React.Component<
     });
   }
 
+  onClickEditSettings() {
+    ipcRenderer.send(CHAN_RENDERER_TO_MAIN, {
+      src: ID_RENDERER,
+      dst: ID_MAIN,
+      type: TYPE_EDIT_SETTINGS,
+    });
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onIpc(_event: Electron.IpcRendererEvent, msg: any) {
     const { type } = msg;
@@ -114,11 +124,6 @@ export default class Routes extends React.Component<
       case TYPE_STATE: {
         const { state } = msg;
         this.setState({ waiting: state === STATE_WAITING });
-        break;
-      }
-      case TYPE_RATE_LIMIT: {
-        const { remaining: rateRemaining } = msg;
-        this.setState({ rateRemaining });
         break;
       }
       case TYPE_RESOURCE_LIST: {
@@ -180,7 +185,6 @@ export default class Routes extends React.Component<
   render() {
     const {
       resourceList,
-      rateRemaining,
       waiting,
       workerError,
       showAbout,
@@ -266,12 +270,14 @@ export default class Routes extends React.Component<
                     </Dropdown.Item>
                     {/* <Dropdown.Item
                       onClick={() => this.loadFromWeb()}
-                      alt={rateRemaining}
                     >
                       Load resources from cloud
                     </Dropdown.Item> */}
                   </Dropdown.Menu>
                 </Dropdown>
+                <Menu.Item onClick={this.onClickEditSettings}>
+                  <Icon name="cog" />
+                </Menu.Item>
               </Menu.Menu>
             </Menu>
             <Switch>
