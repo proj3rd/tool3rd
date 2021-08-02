@@ -9,7 +9,8 @@ import {
   Button,
   Icon,
 } from 'semantic-ui-react';
-import { remote, ipcRenderer, shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
+import * as remote from '@electron/remote';
 import { Resource } from '../components/ResourceItem';
 import {
   CHAN_RENDERER_TO_WORKER,

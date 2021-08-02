@@ -8,7 +8,6 @@ import { cloneDeep } from 'lodash';
 import { parse } from 'path';
 import 'regenerator-runtime/runtime';
 import { getHeapStatistics } from 'v8';
-import { RateLimit } from 'github-rest.d.ts/dist/rateLimit';
 import {
   ContentDirectory,
   ContentDirectoryItem,
@@ -19,6 +18,7 @@ import { Definitions } from 'lib3rd/dist/ran3/classes/definitions';
 import { todo, unreach } from 'unimpl';
 import { ChildProcess } from 'child_process';
 import { getWorkbook } from 'lib3rd/dist/common/spreadsheet';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import {
   ID_WORKER,
   ID_RENDERER,
@@ -27,7 +27,6 @@ import {
   TYPE_MEMORY_USAGE,
   TYPE_STATE,
   STATE_WAITING,
-  TYPE_RATE_LIMIT,
   TYPE_RESOURCE_LIST,
   TYPE_RESOURCE_STATE_REQ,
   TYPE_DIFF_REQ,
@@ -50,9 +49,19 @@ import {
   MSG_FORMAT_SAVE_PATH,
   TYPE_TOAST,
   TYPE_FORMAT_SAVE_CANCEL,
+  ID_MAIN,
+  TYPE_SETTINGS,
+  TYPE_VERSION,
+  TYPE_SPEC_LIST,
 } from './types';
 
 const PROC = <ChildProcess>(<unknown>process);
+
+PROC.send({
+  src: ID_WORKER,
+  dst: ID_MAIN,
+  type: TYPE_SETTINGS,
+});
 
 const TYPE_ASN1 = 'asn1';
 const TYPE_JSON = 'json';
@@ -66,10 +75,6 @@ const template =
       )
     : readFileSync(`${__dirname}/diff.pug`, 'utf8');
 
-axios.defaults.baseURL =
-  'https://api.github.com/repos/proj3rd/3gpp-specs/contents';
-axios.defaults.auth = { username: '', password: '' };
-
 const ECONNRESET = 'ECONNRESET';
 
 interface IResource {
@@ -77,7 +82,7 @@ interface IResource {
   name: string;
   location: string;
   loaded: boolean;
-  type: 'asn1' | 'json' | 'tab';
+  type: 'asn1' | 'tab';
   modules: Modules | Definitions | null;
 }
 
@@ -91,27 +96,6 @@ function filterHiddenFiles(contents: ContentDirectory): ContentDirectoryItem[] {
 
 function findResource(resourceId: number): IResource | undefined {
   return resourceList.find((resource) => resource.resourceId === resourceId);
-}
-
-function reportRateLimit() {
-  axios
-    .get('https://api.github.com/rate_limit')
-    .then((value) => {
-      const { data } = value;
-      const { rate } = data as RateLimit;
-      const { limit, remaining } = rate;
-      (<ChildProcess>(<unknown>process)).send({
-        srd: ID_WORKER,
-        dst: ID_RENDERER,
-        type: TYPE_RATE_LIMIT,
-        limit,
-        remaining,
-      });
-      return true;
-    })
-    .catch((reason) => {
-      console.error(reason);
-    });
 }
 
 async function getResourceContent(location: string) {
@@ -217,7 +201,7 @@ async function loadFile(msg: MSG_LOAD_FILE_REQ) {
       name,
       location,
       loaded: true,
-      type,
+      type: modules instanceof Modules ? TYPE_ASN1 : TYPE_TAB,
       modules,
     });
   }
@@ -236,77 +220,32 @@ function sendToast(message: string, autoDismiss: boolean) {
   });
 }
 
-function loadFromWeb() {
+function loadFromWeb(series: string, spec: string, version: string) {
   reportWorkerState(STATE_WAITING);
+  const location = `https://cdn.jsdelivr.net/gh/proj3rd/3gpp-specs-in-json/${series}/${spec}/${version}`;
   return axios
-    .get('/')
-    .then((contents) => {
+    .get(location)
+    .then((response) => {
       // { name, ... }[]
-      const { data } = contents;
-      const seriesList = filterHiddenFiles(data);
-      return seriesList;
-    })
-    .then((seriesList) => {
-      const specPromiseList = seriesList.map((series) =>
-        axios.get(`/${series.path}`)
-      );
-      return Promise.all(specPromiseList);
-    })
-    .then((specResolvedList) => {
-      const specList: ContentDirectoryItem[] = [];
-      specResolvedList.forEach((specPromise) => {
-        // { name, ... }[]
-        const { data } = specPromise;
-        specList.push(...filterHiddenFiles(data));
-      });
-      const versionPromiseList = specList.map((spec) =>
-        axios.get(`/${spec.path}`)
-      );
-      return Promise.all(versionPromiseList);
-    })
-    .then((versionResolvedList) => {
-      const versionList: ContentDirectoryItem[] = [];
-      versionResolvedList.forEach((versionPromise) => {
-        // { name, ... }[]
-        const { data } = versionPromise;
-        versionList.push(...filterHiddenFiles(data));
-      });
-      versionList.forEach((version) => {
-        const resourceId = resourceList.length;
-        const { name, download_url: location } = version;
-        if (!resourceExists(name, location)) {
-          const { ext } = parse(location);
-          const type = ext.includes('asn') ? TYPE_ASN1 : TYPE_TAB;
-          resourceList.push({
-            resourceId,
-            name,
-            location,
-            loaded: false,
-            type,
-            modules: null,
-          });
-        }
-      });
-      return true; // eslint(promise/always-return)
+      const { data: obj } = response;
+      const resourceId = resourceList.length;
+      if (!resourceExists(version, location)) {
+        const type = version.includes('asn') ? TYPE_ASN1 : TYPE_TAB;
+        const modules = type === TYPE_ASN1 ? Modules.fromObject(obj) : Definitions.fromObject(obj);
+        resourceList.push({
+          resourceId,
+          name: version,
+          location,
+          loaded: true,
+          type,
+          modules,
+        });
+      }
     })
     .catch((reason) => {
       console.error(reason);
-      const { response, code, errno } = reason;
-      if (response && response.status === 403) {
-        const { data } = reason.response;
-        if (data) {
-          const message = data.message as string;
-          if (message && message.includes('rate limit')) {
-            sendToast(
-              `Your request is blocked due to too many requests.
-Please try again after an hour.
-Or you can manually download resources via 'Visit spec repository'
-and load them via 'Load local file'.`,
-              false
-            );
-          }
-        }
-      } else if (code === ECONNRESET || errno === ECONNRESET) {
+      const { code, errno } = reason;
+      if (code === ECONNRESET || errno === ECONNRESET) {
         sendToast(
           `Your request is blocked due to network issue.
 Maybe you are behind the proxy.
@@ -317,7 +256,6 @@ and load them via 'Load local file'.`,
       }
     })
     .finally(() => {
-      reportRateLimit();
       reportResourceList();
       reportMemoryUsage();
       reportWorkerState();
@@ -327,11 +265,13 @@ and load them via 'Load local file'.`,
 function setResourceState(msg: MSG_RESOURCE_STATE_REQ) {
   reportWorkerState(STATE_WAITING);
   const { resourceId, state } = msg;
-  const resource = resourceList.find((item) => item.resourceId === resourceId);
+  const indexFound = resourceList.findIndex((item) => item.resourceId === resourceId);
+  const resource = resourceList[indexFound];
   if (resource !== undefined && resource.loaded !== state) {
     if (state === false) {
       resource.modules = null;
-      resource.loaded = false;
+      resource.loaded = false; // Not necessary if `resourceList.splice()` is used
+      resourceList.splice(indexFound, 1);
       reportResourceList();
       reportMemoryUsage();
       reportWorkerState();
@@ -341,7 +281,7 @@ function setResourceState(msg: MSG_RESOURCE_STATE_REQ) {
       getResourceContent(resource.location)
         .then((content) => {
           // eslint-disable-next-line promise/always-return
-          if (resource.type === TYPE_JSON) {
+          if (resource.location.endsWith('json')) {
             const obj = JSON.parse(content);
             try {
               console.log('Trying to deserialize into RAN3 tabular');
@@ -368,7 +308,6 @@ function setResourceState(msg: MSG_RESOURCE_STATE_REQ) {
           console.error(reason);
         })
         .finally(() => {
-          reportRateLimit();
           reportResourceList();
           reportMemoryUsage();
           reportWorkerState();
@@ -526,28 +465,7 @@ function reportIeList(msg: MSG_IE_LIST_REQ) {
   }
   const { type } = resource;
   const ieList: { name: string; key: string }[] = [];
-  if (type === TYPE_JSON) {
-    if (resource.modules instanceof Definitions) {
-      resource.modules.definitionList.forEach((definition) => {
-        const { sectionNumber: key, name } = definition;
-        ieList.push({ name, key });
-      });
-    } else if (resource.modules instanceof Modules) {
-      resource.modules.modules.forEach((module) => {
-        const { name: moduleName } = module;
-        module.assignments.forEach((assignment) => {
-          if (assignment instanceof ValueAssignment) {
-            return;
-          }
-          const { name } = assignment;
-          const key = `${moduleName}.${name}`;
-          ieList.push({ name, key });
-        });
-      });
-    } else {
-      unreach();
-    }
-  } else if (type === TYPE_ASN1) {
+  if (type === TYPE_ASN1) {
     if (!(resource.modules instanceof Modules)) {
       unreach();
     }
@@ -619,7 +537,8 @@ process.on('message', (msg) => {
       break;
     }
     case TYPE_LOAD_FROM_WEB_REQ: {
-      loadFromWeb();
+      const { series, spec, version } = msg;
+      loadFromWeb(series, spec, version);
       break;
     }
     case TYPE_MEMORY_USAGE_REQ: {
@@ -628,6 +547,51 @@ process.on('message', (msg) => {
     }
     case TYPE_RESOURCE_STATE_REQ: {
       setResourceState(msg);
+      break;
+    }
+    case TYPE_SETTINGS: {
+      const { settings } = msg;
+      const { proxy } = settings;
+      const { use, https, rejectUnauthorized } = proxy;
+      if (use) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = Number(rejectUnauthorized).toString();
+        const httpsProxyAgent = new HttpsProxyAgent({
+          protocol: https.protocol,
+          host: https.host,
+          port: https.port,
+          rejectUnauthorized,
+        });
+        axios.defaults.httpsAgent = httpsProxyAgent;
+      }
+      break;
+    }
+    case TYPE_SPEC_LIST: {
+      axios.get('https://cdn.jsdelivr.net/gh/proj3rd/3gpp-specs-in-json/.dir-list.json').then((response) => {
+        const specList = response.data;
+        PROC.send({
+          src: ID_WORKER,
+          dst: ID_RENDERER,
+          type: TYPE_SPEC_LIST,
+          specList,
+        });
+      }).catch((reason) => {
+        console.error(reason);
+      })
+      break;
+    }
+    case TYPE_VERSION: {
+      axios.get('https://data.jsdelivr.com/v1/package/gh/proj3rd/tool3rd').then((response) => {
+        const { versions } = response.data;
+        const version = versions[0];
+        PROC.send({
+          src: ID_WORKER,
+          dst: ID_RENDERER,
+          type: TYPE_VERSION,
+          version,
+        });
+      }).catch((reason) => {
+        console.error(reason);
+      });
       break;
     }
     default: {
