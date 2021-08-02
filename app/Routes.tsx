@@ -1,8 +1,7 @@
 /* eslint react/jsx-props-no-spreading: off */
 import React from 'react';
-import { Switch, Route, Link } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import {
-  Menu,
   Grid,
   Divider,
   Item,
@@ -11,13 +10,10 @@ import {
   Modal,
   Form,
   Button,
-  Dropdown,
   Message,
   Header,
   Container,
-  Label,
   List,
-  Icon,
 } from 'semantic-ui-react';
 import { ipcRenderer, shell } from 'electron';
 import * as remote from '@electron/remote';
@@ -41,10 +37,15 @@ import {
   ID_MAIN,
   TYPE_EDIT_SETTINGS,
   CHAN_RENDERER_TO_MAIN,
+  TYPE_VERSION,
+  TYPE_SPEC_LIST,
 } from './types';
 import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
+import { Col, Menu, Row } from 'antd';
+
+const { SubMenu } = Menu;
 
 type Toast = {
   key: number;
@@ -59,6 +60,8 @@ type State = {
   showAbout: boolean;
   toastList: Toast[];
   numToast: number;
+  specList: { name: string; children: { name: string; children: string[]; }[]; }[];
+  versionLatest: string | undefined;
 };
 
 export default class Routes extends React.Component<
@@ -76,6 +79,8 @@ export default class Routes extends React.Component<
       showAbout: false,
       toastList: [],
       numToast: 0,
+      specList: [],
+      versionLatest: undefined,
     };
     this.onIpc = this.onIpc.bind(this);
     this.onWorkerError = this.onWorkerError.bind(this);
@@ -86,6 +91,16 @@ export default class Routes extends React.Component<
   componentDidMount() {
     ipcRenderer.on(CHAN_WORKER_ERROR, this.onWorkerError);
     ipcRenderer.on(CHAN_WORKER_TO_RENDERER, this.onIpc);
+    ipcRenderer.send(CHAN_RENDERER_TO_WORKER, {
+      src: ID_RENDERER,
+      dst: ID_WORKER,
+      type: TYPE_VERSION,
+    });
+    ipcRenderer.send(CHAN_RENDERER_TO_WORKER, {
+      src: ID_RENDERER,
+      dst: ID_WORKER,
+      type: TYPE_SPEC_LIST,
+    });
   }
 
   componentWillUnmount() {
@@ -131,9 +146,19 @@ export default class Routes extends React.Component<
         this.setState({ resourceList });
         break;
       }
+      case TYPE_SPEC_LIST: {
+        const { specList } = msg;
+        this.setState({ specList });
+        break;
+      }
       case TYPE_TOAST: {
         const { message, autoDismiss } = msg;
         this.addToast({ key: -1, message, autoDismiss });
+        break;
+      }
+      case TYPE_VERSION: {
+        const { version: versionLatest } = msg;
+        this.setState({ versionLatest });
         break;
       }
       default: {
@@ -169,17 +194,24 @@ export default class Routes extends React.Component<
   }
 
   // eslint-disable-next-line class-methods-use-this
-  loadFromWeb() {
+  loadFromWeb(series: string, spec: string, version: string) {
     ipcRenderer.send(CHAN_RENDERER_TO_WORKER, {
       src: ID_RENDERER,
       dst: ID_WORKER,
       type: TYPE_LOAD_FROM_WEB_REQ,
+      series,
+      spec,
+      version,
     });
   }
 
   // eslint-disable-next-line class-methods-use-this
   openIssueTracker() {
     remote.shell.openExternal('https://github.com/proj3rd/tool3rd/issues');
+  }
+
+  pushHistory(location: string) {
+    (this.props as any).history.push(location);
   }
 
   render() {
@@ -189,96 +221,135 @@ export default class Routes extends React.Component<
       workerError,
       showAbout,
       toastList,
+      specList,
+      versionLatest,
     } = this.state;
     return (
       <App>
         <Grid>
           <Grid.Column width={13} id="main">
-            <Menu>
-              <Link to="/">
-                <Menu.Item header>tool3rd</Menu.Item>
-              </Link>
-              <Dropdown item simple text="Message">
-                <Dropdown.Menu>
-                  <Link to={routes.FORMAT}>
-                    <Dropdown.Item>Format</Dropdown.Item>
-                  </Link>
-                  <Link to={routes.DIFF}>
-                    <Dropdown.Item>Diff ASN.1</Dropdown.Item>
-                  </Link>
-                </Dropdown.Menu>
-              </Dropdown>
-              <Dropdown item simple text="PHY" disabled>
-                <Dropdown.Menu>
-                  <Dropdown.Item disabled>Inter-RAT Interference</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-              <Dropdown item simple text="Help">
-                <Dropdown.Menu>
-                  <Dropdown.Item
-                    onClick={() => {
-                      shell.openExternal(
-                        'https://github.com/proj3rd/tool3rd/releases'
-                      );
-                    }}
-                  >
-                    Check for updates
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      shell.openExternal(
-                        'https://github.com/proj3rd/tool3rd/issues'
-                      );
-                    }}
-                  >
-                    Report Bug & Suggest feature
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      this.setState({ showAbout: true });
-                    }}
-                  >
-                    About
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-              <Menu.Menu position="right">
-                <Dropdown item simple text="Resources">
-                  <Dropdown.Menu>
-                    <Dropdown.Item
-                      onClick={() => this.fileInputRef.current?.click()}
-                    >
-                      Load local file
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        shell.openExternal(
-                          'https://github.com/proj3rd/3gpp-specs-in-json/archive/master.zip'
-                        );
-                      }}
-                    >
-                      Download spec archive
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        shell.openExternal(
-                          'https://github.com/proj3rd/3gpp-specs-in-json/'
-                        );
-                      }}
-                    >
-                      Visit spec repository
-                    </Dropdown.Item>
-                    {/* <Dropdown.Item
-                      onClick={() => this.loadFromWeb()}
-                    >
-                      Load resources from cloud
-                    </Dropdown.Item> */}
-                  </Dropdown.Menu>
-                </Dropdown>
-                <Menu.Item onClick={this.onClickEditSettings}>
-                  <Icon name="cog" />
+            <Menu mode="horizontal" selectable={false}>
+              <Menu.Item
+                key="header"
+                onClick={() => this.pushHistory("/")}
+              >
+                tool3rd
+              </Menu.Item>
+              <SubMenu key="message" title="Message">
+                <Menu.Item
+                  key="format"
+                  onClick={() => this.pushHistory(routes.FORMAT)}
+                >
+                  Format
                 </Menu.Item>
-              </Menu.Menu>
+                <Menu.Item
+                  key="diff"
+                  onClick={() => this.pushHistory(routes.DIFF)}
+                >
+                  Diff ASN.1
+                </Menu.Item>
+              </SubMenu>
+              <SubMenu key="resources" title="Resources">
+                <Menu.Item
+                  key="loadLocalFile"
+                  onClick={() => this.fileInputRef.current?.click()}
+                >
+                  Load local file
+                </Menu.Item>
+                {
+                  specList.length ? (
+                    <SubMenu key="cloud" title="Load from cloud">
+                      {
+                        specList.map((series: { name: string; children: { name: string; children: string[]; }[]; }) => {
+                          const { name: seriesName, children } = series;
+                          return (
+                            <SubMenu key={seriesName} title={seriesName}>
+                              {
+                                children.map((spec) => {
+                                  const { name: specName, children } = spec;
+                                  return (
+                                    <SubMenu key={specName} title={specName}>
+                                      {
+                                        children.map((version) => {
+                                          const label = version.replace(".json", "").replace(".asn1", " (ASN.1)").replace(".tabular", " (Tabular)");
+                                          return (
+                                            <Menu.Item
+                                              key={version}
+                                              onClick={() => this.loadFromWeb(seriesName, specName, version)}
+                                            >
+                                              {label}
+                                            </Menu.Item>
+                                          )
+                                        })
+                                      }
+                                    </SubMenu>
+                                  )
+                                })
+                              }
+                            </SubMenu>
+                          )
+                        })
+                      }
+                    </SubMenu>
+                  ) : null
+                }
+                <Menu.Item
+                  key="downloadSpecArchive"
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://github.com/proj3rd/3gpp-specs-in-json/archive/master.zip'
+                    );
+                  }}
+                >
+                  Download spec archive
+                </Menu.Item>
+                <Menu.Item
+                  key="visitSpecRepository"
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://github.com/proj3rd/3gpp-specs-in-json/'
+                    );
+                  }}
+                >
+                  Visit spec repository
+                </Menu.Item>
+              </SubMenu>
+              <Menu.Item
+                key="settings"
+                onClick={this.onClickEditSettings}
+              >
+                Settings
+              </Menu.Item>
+              <SubMenu key="help" title="Help">
+                <Menu.Item
+                  key="checkForUpdate"
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://github.com/proj3rd/tool3rd/releases'
+                    );
+                  }}
+                >
+                  Check for update
+                </Menu.Item>
+                <Menu.Item
+                  key="issues"
+                  onClick={() => {
+                    shell.openExternal(
+                      'https://github.com/proj3rd/tool3rd/issues'
+                    );
+                  }}
+                >
+                  Report Bug & Suggest feature
+                </Menu.Item>
+                <Menu.Item
+                  key="about"
+                  onClick={() => {
+                    this.setState({ showAbout: true });
+                  }}
+                >
+                  About
+                </Menu.Item>
+              </SubMenu>
             </Menu>
             <Switch>
               <Route exact path={routes.HOME} component={HomePage} />
@@ -343,9 +414,20 @@ export default class Routes extends React.Component<
           <Modal.Content>
             <Container textAlign="center">
               <Header as="h1">tool3rd</Header>
-              <div>
-                <Label>{version}</Label>
-              </div>
+              <>
+                <Row>
+                  <Col span={12} style={{ textAlign: "right" }}>Current:</Col>
+                  <Col span={12} style={{ textAlign: "left" }}>{version}</Col>
+                </Row>
+                {
+                  versionLatest !== undefined ? (
+                    <Row>
+                      <Col span={12} style={{ textAlign: "right" }}>Latest:</Col>
+                      <Col span={12} style={{ textAlign: "left" }}>{versionLatest}</Col>
+                    </Row>
+                  ) : null
+                }
+              </>
               <List bulleted horizontal>
                 <List.Item
                   as="a"
