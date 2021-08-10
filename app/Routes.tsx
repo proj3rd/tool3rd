@@ -44,6 +44,7 @@ import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
 import { Col, Menu, Row } from 'antd';
+import ModalSettings from './components/ModalSettings';
 
 const { SubMenu } = Menu;
 
@@ -59,6 +60,7 @@ type State = {
   workerError: Error | null;
   showAbout: boolean;
   toastList: Toast[];
+  modalSettingsVisible: boolean;
   numToast: number;
   specList: { name: string; children: { name: string; children: string[]; }[]; }[];
   versionLatest: string | undefined;
@@ -79,6 +81,7 @@ export default class Routes extends React.Component<
       showAbout: false,
       toastList: [],
       numToast: 0,
+      modalSettingsVisible: false,
       specList: [],
       versionLatest: undefined,
     };
@@ -221,6 +224,7 @@ export default class Routes extends React.Component<
       workerError,
       showAbout,
       toastList,
+      modalSettingsVisible,
       specList,
       versionLatest,
     } = this.state;
@@ -316,7 +320,7 @@ export default class Routes extends React.Component<
               </SubMenu>
               <Menu.Item
                 key="settings"
-                onClick={this.onClickEditSettings}
+                onClick={() => this.setState({ modalSettingsVisible: true })}
               >
                 Settings
               </Menu.Item>
@@ -463,6 +467,10 @@ export default class Routes extends React.Component<
             );
           })}
         </div>
+        <ModalSettings
+          onCancel={() => this.setState({ modalSettingsVisible: false })}
+          visible={modalSettingsVisible}
+        />
       </App>
     );
   }

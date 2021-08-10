@@ -552,17 +552,21 @@ process.on('message', (msg) => {
     case TYPE_SETTINGS: {
       const { settings } = msg;
       const { proxy } = settings;
-      const { use, https, rejectUnauthorized } = proxy;
-      if (use) {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = Number(rejectUnauthorized).toString();
-        const httpsProxyAgent = new HttpsProxyAgent({
-          protocol: https.protocol,
-          host: https.host,
-          port: https.port,
-          rejectUnauthorized,
-        });
-        axios.defaults.httpsAgent = httpsProxyAgent;
+      if (!proxy) {
+        break;
       }
+      const { use, https, rejectUnauthorized } = proxy;
+      if (!use || !https) {
+        break;
+      }
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = Number(rejectUnauthorized).toString();
+      const httpsProxyAgent = new HttpsProxyAgent({
+        protocol: https.protocol,
+        host: https.host,
+        port: https.port,
+        rejectUnauthorized,
+      });
+      axios.defaults.httpsAgent = httpsProxyAgent;
       break;
     }
     case TYPE_SPEC_LIST: {
