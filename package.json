@@ -1,7 +1,7 @@
 {
   "name": "tool3rd",
   "productName": "tool3rd",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "description": "tool3rd",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\" \"yarn build-worker\"",
@@ -37,21 +37,6 @@
     "test-e2e": "node -r @babel/register ./internals/scripts/CheckBuildsExist.js && cross-env NODE_ENV=test testcafe electron:./app ./test/e2e/HomePage.e2e.ts",
     "test-e2e-live": "node -r @babel/register ./internals/scripts/CheckBuildsExist.js && cross-env NODE_ENV=test testcafe --live electron:./app ./test/e2e/HomePage.e2e.ts",
     "test-watch": "yarn test --watch"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "cross-env NODE_ENV=development eslint --cache"
-    ],
-    "{*.json,.{babelrc,eslintrc,prettierrc,stylelintrc}}": [
-      "prettier --ignore-path .eslintignore --parser json --write"
-    ],
-    "*.{css,scss}": [
-      "stylelint --ignore-path .eslintignore --syntax scss --fix",
-      "prettier --ignore-path .eslintignore --single-quote --write"
-    ],
-    "*.{html,md,yml}": [
-      "prettier --ignore-path .eslintignore --single-quote --write"
-    ]
   },
   "build": {
     "productName": "tool3rd",
@@ -188,6 +173,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/react-test-renderer": "^16.9.2",
     "@types/redux-logger": "^3.0.8",
+    "@types/semver-compare": "^1.0.1",
     "@types/webpack": "^4.41.21",
     "@types/webpack-env": "^1.15.2",
     "@typescript-eslint/eslint-plugin": "^3.6.1",
@@ -285,6 +271,7 @@
     "regenerator-runtime": "^0.13.7",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^1.2.0",
+    "semver-compare": "^1.0.0",
     "source-map-support": "^0.5.19",
     "unimpl": "^1.2.4"
   },
@@ -320,10 +307,5 @@
     "extends": [
       "bliss"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   }
 }

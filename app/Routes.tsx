@@ -17,6 +17,7 @@ import {
 } from 'semantic-ui-react';
 import { ipcRenderer, shell } from 'electron';
 import * as remote from '@electron/remote';
+import semverCompare from 'semver-compare';
 import routes from './constants/routes.json';
 import App from './containers/App';
 import HomePage from './containers/HomePage';
@@ -43,7 +44,7 @@ import {
 import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
-import { Col, Menu, Row } from 'antd';
+import { Col, Menu, Row, Tag, Typography } from 'antd';
 import ModalSettings from './components/ModalSettings';
 
 const { SubMenu } = Menu;
@@ -237,7 +238,7 @@ export default class Routes extends React.Component<
                 key="header"
                 onClick={() => this.pushHistory("/")}
               >
-                tool3rd
+                <Typography.Text strong>tool3rd</Typography.Text>
               </Menu.Item>
               <SubMenu key="message" title="Message">
                 <Menu.Item
@@ -354,6 +355,19 @@ export default class Routes extends React.Component<
                   About
                 </Menu.Item>
               </SubMenu>
+              {
+                semverCompare(versionLatest ?? '', version) > 0 ? (
+                  <Menu.Item
+                    onClick={() => {
+                      shell.openExternal(
+                        'https://github.com/proj3rd/tool3rd/releases'
+                      );
+                    }}
+                  >
+                    <Tag>New version available</Tag>
+                  </Menu.Item>
+                ) : null
+              }
             </Menu>
             <Switch>
               <Route exact path={routes.HOME} component={HomePage} />
@@ -467,10 +481,18 @@ export default class Routes extends React.Component<
             );
           })}
         </div>
-        <ModalSettings
-          onCancel={() => this.setState({ modalSettingsVisible: false })}
-          visible={modalSettingsVisible}
-        />
+        {
+          /**
+           * This branching prevents the following warning:
+           * > Warning: Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?
+           */
+          modalSettingsVisible ? (
+            <ModalSettings
+              onCancel={() => this.setState({ modalSettingsVisible: false })}
+              visible={modalSettingsVisible}
+            />
+          ) : null
+        }
       </App>
     );
   }
