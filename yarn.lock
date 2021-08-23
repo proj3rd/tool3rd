@@ -9599,8 +9599,8 @@ levn@~0.3.0:
     type-check "~0.3.2"
 
 lib3rd@proj3rd/lib3rd:
-  version "1.1.0"
-  resolved "https://codeload.github.com/proj3rd/lib3rd/tar.gz/253d212775ad2f2ef98fce45f8cdfdbcc537c309"
+  version "1.2.0"
+  resolved "https://codeload.github.com/proj3rd/lib3rd/tar.gz/ca5072cbf52aa47990eafd51ff1b277c756903dc"
   dependencies:
     antlr4ts "^0.5.0-alpha.4"
     cheerio "^1.0.0-rc.6"
