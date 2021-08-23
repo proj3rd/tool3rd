@@ -44,7 +44,7 @@ import {
 import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
-import { Col, Menu, Row, Tag } from 'antd';
+import { Col, Menu, Row, Tag, Typography } from 'antd';
 import ModalSettings from './components/ModalSettings';
 
 const { SubMenu } = Menu;
@@ -238,7 +238,7 @@ export default class Routes extends React.Component<
                 key="header"
                 onClick={() => this.pushHistory("/")}
               >
-                tool3rd
+                <Typography.Text strong>tool3rd</Typography.Text>
               </Menu.Item>
               <SubMenu key="message" title="Message">
                 <Menu.Item
