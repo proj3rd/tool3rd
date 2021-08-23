@@ -467,10 +467,18 @@ export default class Routes extends React.Component<
             );
           })}
         </div>
-        <ModalSettings
-          onCancel={() => this.setState({ modalSettingsVisible: false })}
-          visible={modalSettingsVisible}
-        />
+        {
+          /**
+           * This branching prevents the following warning:
+           * > Warning: Instance created by `useForm` is not connected to any Form element. Forget to pass `form` prop?
+           */
+          modalSettingsVisible ? (
+            <ModalSettings
+              onCancel={() => this.setState({ modalSettingsVisible: false })}
+              visible={modalSettingsVisible}
+            />
+          ) : null
+        }
       </App>
     );
   }
