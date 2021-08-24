@@ -15,8 +15,7 @@ import {
   Container,
   List,
 } from 'semantic-ui-react';
-import { ipcRenderer, shell } from 'electron';
-import * as remote from '@electron/remote';
+import { ipcRenderer } from 'electron';
 import semverCompare from 'semver-compare';
 import routes from './constants/routes.json';
 import App from './containers/App';
@@ -40,12 +39,14 @@ import {
   CHAN_RENDERER_TO_MAIN,
   TYPE_VERSION,
   TYPE_SPEC_LIST,
+  CHAN_SHELL_OPEN_EXTERNAL,
 } from './types';
 import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
 import { Col, Menu, Row, Tag, Typography } from 'antd';
 import ModalSettings from './components/ModalSettings';
+import { GH_LIB3RD_REPO, GH_SPEC_ARCHIVE, GH_SPEC_REPO, GH_TOOL3RD_ISSUES, GH_TOOL3RD_RELEASES, GH_TOOL3RD_REPO } from './constants/urls';
 
 const { SubMenu } = Menu;
 
@@ -211,7 +212,9 @@ export default class Routes extends React.Component<
 
   // eslint-disable-next-line class-methods-use-this
   openIssueTracker() {
-    remote.shell.openExternal('https://github.com/proj3rd/tool3rd/issues');
+    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+      url: GH_TOOL3RD_ISSUES,
+    });
   }
 
   pushHistory(location: string) {
@@ -301,9 +304,9 @@ export default class Routes extends React.Component<
                 <Menu.Item
                   key="downloadSpecArchive"
                   onClick={() => {
-                    shell.openExternal(
-                      'https://github.com/proj3rd/3gpp-specs-in-json/archive/master.zip'
-                    );
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_SPEC_ARCHIVE,
+                    })
                   }}
                 >
                   Download spec archive
@@ -311,9 +314,9 @@ export default class Routes extends React.Component<
                 <Menu.Item
                   key="visitSpecRepository"
                   onClick={() => {
-                    shell.openExternal(
-                      'https://github.com/proj3rd/3gpp-specs-in-json/'
-                    );
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_SPEC_REPO,
+                    })
                   }}
                 >
                   Visit spec repository
@@ -329,9 +332,9 @@ export default class Routes extends React.Component<
                 <Menu.Item
                   key="checkForUpdate"
                   onClick={() => {
-                    shell.openExternal(
-                      'https://github.com/proj3rd/tool3rd/releases'
-                    );
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_TOOL3RD_RELEASES,
+                    })
                   }}
                 >
                   Check for update
@@ -339,9 +342,9 @@ export default class Routes extends React.Component<
                 <Menu.Item
                   key="issues"
                   onClick={() => {
-                    shell.openExternal(
-                      'https://github.com/proj3rd/tool3rd/issues'
-                    );
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_TOOL3RD_ISSUES,
+                    })
                   }}
                 >
                   Report Bug & Suggest feature
@@ -359,9 +362,9 @@ export default class Routes extends React.Component<
                 semverCompare(versionLatest ?? '', version) > 0 ? (
                   <Menu.Item
                     onClick={() => {
-                      shell.openExternal(
-                        'https://github.com/proj3rd/tool3rd/releases'
-                      );
+                      ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                        url: GH_TOOL3RD_RELEASES,
+                      })
                     }}
                   >
                     <Tag>New version available</Tag>
@@ -450,7 +453,9 @@ export default class Routes extends React.Component<
                 <List.Item
                   as="a"
                   onClick={() => {
-                    shell.openExternal('https://github.com/proj3rd/tool3rd');
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_TOOL3RD_REPO,
+                    })
                   }}
                 >
                   Project home
@@ -458,7 +463,9 @@ export default class Routes extends React.Component<
                 <List.Item
                   as="a"
                   onClick={() => {
-                    shell.openExternal('https://github.com/proj3rd/lib3rd');
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_LIB3RD_REPO,
+                    })
                   }}
                 >
                   lib3rd

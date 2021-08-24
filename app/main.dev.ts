@@ -11,7 +11,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path, { join } from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
@@ -27,9 +27,11 @@ import {
   ID_WORKER,
   CHAN_RENDERER_TO_MAIN,
   TYPE_EDIT_SETTINGS,
+  CHAN_SHELL_OPEN_EXTERNAL,
+  CHAN_APP_EXIT,
+  CHAN_APP_RELAUNCH,
+  CHAN_DIALOG_SHOWSAVE,
 } from './types';
-
-require('@electron/remote/main').initialize();
 
 /**
  * Path
@@ -175,6 +177,28 @@ worker.on('message', (msg) => {
       }
     }
   }
+});
+
+ipcMain.on(CHAN_APP_EXIT, (_event, _args) => {
+  app.exit();
+});
+
+ipcMain.on(CHAN_APP_RELAUNCH, (_event, _args) => {
+  app.relaunch();
+});
+
+ipcMain.handle(CHAN_DIALOG_SHOWSAVE, (_event, args) => {
+  const { defaultPath, filters } = args;
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  return focusedWindow && dialog.showSaveDialog(
+    focusedWindow,
+    { defaultPath, filters },
+  );
+});
+
+ipcMain.on(CHAN_SHELL_OPEN_EXTERNAL, (_event, args) => {
+  const { url, options } = args;
+  shell.openExternal(url, options);
 });
 
 ipcMain.on(CHAN_RENDERER_TO_MAIN, (_event, msg) => {

@@ -4,6 +4,10 @@ export const ID_MAIN = 'main';
 export const ID_RENDERER = 'renderer';
 export const ID_WORKER = 'worker';
 
+export const CHAN_APP_EXIT = 'appExit';
+export const CHAN_APP_RELAUNCH = 'appRelaunch';
+export const CHAN_DIALOG_SHOWSAVE = 'dialogShowSave';
+export const CHAN_SHELL_OPEN_EXTERNAL = 'shellOpenExternal';
 export const CHAN_RENDERER_TO_MAIN = 'rendererToMain';
 export const CHAN_RENDERER_TO_WORKER = 'rendererToWorker';
 export const CHAN_WORKER_ERROR = 'workerError';

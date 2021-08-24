@@ -1,10 +1,11 @@
 import { Button, Form, Modal, ModalProps } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import TextArea from "antd/lib/input/TextArea";
-import * as remote from '@electron/remote';
 import Store from "electron-store";
 import { isEqual } from "lodash";
 import React, { useEffect, useState } from "react";
+import { ipcRenderer } from "electron";
+import { CHAN_APP_EXIT, CHAN_APP_RELAUNCH } from "../types";
 
 type Props = {} & ModalProps;
 
@@ -24,8 +25,8 @@ export default function ModalSettings({ ...modalProps }: Props) {
 
   function applyAndRelaunch() {
     store.set(JSON.parse(formSettings.getFieldValue('settings')));
-    remote.app.relaunch();
-    remote.app.exit();
+    ipcRenderer.send(CHAN_APP_RELAUNCH);
+    ipcRenderer.send(CHAN_APP_EXIT);
   }
 
   function checkSettingsChanged() {

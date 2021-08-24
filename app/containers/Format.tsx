@@ -16,7 +16,6 @@ import {
   Icon,
 } from 'semantic-ui-react';
 import { ipcRenderer, shell } from 'electron';
-import * as remote from '@electron/remote';
 import { Resource } from '../components/ResourceItem';
 import {
   CHAN_WORKER_TO_RENDERER,
@@ -30,6 +29,7 @@ import {
   TYPE_FORMAT_SAVE_PATH,
   TYPE_FORMAT_SAVE_CANCEL,
   TYPE_WORK_COMPLETE,
+  CHAN_DIALOG_SHOWSAVE,
 } from '../types';
 
 type QueueItem = {
@@ -173,17 +173,15 @@ export default class Format extends React.Component<Props, State> {
             defaultPath = `${specFileName}${expandString}.xlsx`;
           }
         }
-        remote.dialog
-          .showSaveDialog({
-            defaultPath,
-            filters: [
-              {
-                name: 'Spreadsheet file',
-                extensions: ['xlsx'],
-              },
-            ],
-          })
-          .then((dialogReturn) => {
+        ipcRenderer.invoke(CHAN_DIALOG_SHOWSAVE, {
+          defaultPath,
+          filters: [
+            {
+              name: 'Spreadsheet file',
+              extensions: ['xlsx'],
+            },
+          ],
+        }).then((dialogReturn) => {
             const { canceled, filePath } = dialogReturn;
             // eslint-disable-next-line promise/always-return
             if (canceled || filePath === undefined) {
