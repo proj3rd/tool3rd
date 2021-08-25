@@ -90,10 +90,6 @@ const resourceList: IResource[] = [];
 let diffRendered: string | undefined;
 let formatted: Workbook | undefined;
 
-function filterHiddenFiles(contents: ContentDirectory): ContentDirectoryItem[] {
-  return contents.filter((item) => !item.name.startsWith('.'));
-}
-
 function findResource(resourceId: number): IResource | undefined {
   return resourceList.find((resource) => resource.resourceId === resourceId);
 }
