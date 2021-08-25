@@ -10,7 +10,6 @@ import {
   Icon,
 } from 'semantic-ui-react';
 import { ipcRenderer, shell } from 'electron';
-import * as remote from '@electron/remote';
 import { Resource } from '../components/ResourceItem';
 import {
   CHAN_RENDERER_TO_WORKER,
@@ -22,6 +21,7 @@ import {
   TYPE_DIFF_SAVE_PATH,
   TYPE_DIFF_SAVE_REQ,
   TYPE_WORK_COMPLETE,
+  CHAN_DIALOG_SHOWSAVE,
 } from '../types';
 
 type Props = {
@@ -95,17 +95,15 @@ export default class Diff extends React.Component<Props, State> {
         const optionNew = options.find((option) => option.key === valueNew);
         const nameOld = optionOld ? optionOld.name : '';
         const nameNew = optionNew ? optionNew.name : '';
-        remote.dialog
-          .showSaveDialog({
-            defaultPath: `diff_${nameOld}_${nameNew}.htm`,
-            filters: [
-              {
-                name: 'Web page file',
-                extensions: ['htm', 'html'],
-              },
-            ],
-          })
-          .then((dialogReturn) => {
+        ipcRenderer.invoke(CHAN_DIALOG_SHOWSAVE, {
+          defaultPath: `diff_${nameOld}_${nameNew}.htm`,
+          filters: [
+            {
+              name: 'Web page file',
+              extensions: ['htm', 'html'],
+            },
+          ],
+        }).then((dialogReturn) => {
             const { canceled, filePath } = dialogReturn;
             // eslint-disable-next-line promise/always-return
             if (canceled || filePath === undefined) {

@@ -11,7 +11,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path, { join } from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
@@ -27,27 +27,45 @@ import {
   ID_WORKER,
   CHAN_RENDERER_TO_MAIN,
   TYPE_EDIT_SETTINGS,
+  CHAN_SHELL_OPEN_EXTERNAL,
+  CHAN_APP_EXIT,
+  CHAN_APP_RELAUNCH,
+  CHAN_DIALOG_SHOWSAVE,
+  SETTINGS_PROXY_0_0_0,
 } from './types';
-
-require('@electron/remote/main').initialize();
 
 /**
  * Path
  * - Development: {appData}/Electron
  * - Production: {appData}/{appName}
  */
-const store = new Store();
-if (!store.has('proxy')) {
-  store.set('proxy', {
-    use: false,
-    https: {
-      protocol: '',
-      host: '',
-      port: 0,
+const store = new Store({
+  defaults: {
+    proxy: {
+      use: false,
+      https: {
+        protocol: '',
+        host: '',
+        port: 0,
+      },
     },
-    rejectUnauthorized: true,
-  });
-}
+    security: {
+      cert: '',
+      rejectUnauthorized: true,
+    }
+  },
+  migrations: {
+    '1.15.0': (store) => {
+      const proxy = store.get('proxy') as SETTINGS_PROXY_0_0_0;
+      const { rejectUnauthorized, ...proxyNew } = proxy;
+      if (rejectUnauthorized !== undefined) {
+        store.set('proxy', proxyNew);
+        store.set('security.rejectUnauthorized', rejectUnauthorized);
+      }
+    }
+  }
+});
+const { cert, rejectUnauthorized } = store.get('security');
 
 export default class AppUpdater {
   constructor() {
@@ -139,7 +157,11 @@ const workerPath =
     : 'app.asar/dist/worker.js';
 const workerCwd =
   process.env.NODE_ENV === 'development' ? undefined : join(__dirname, '..');
-const worker = fork(workerPath, { cwd: workerCwd });
+const envWorker = Object.assign({}, process.env, {
+  NODE_EXTRA_CA_CERTS: cert,
+  NODE_TLS_REJECT_UNAUTHORIZED: Number(rejectUnauthorized).toString(),
+});
+const worker = fork(workerPath, { cwd: workerCwd, env: envWorker });
 
 worker.on('message', (msg) => {
   const { dst, type } = msg;
@@ -175,6 +197,28 @@ worker.on('message', (msg) => {
       }
     }
   }
+});
+
+ipcMain.on(CHAN_APP_EXIT, (_event, _args) => {
+  app.exit();
+});
+
+ipcMain.on(CHAN_APP_RELAUNCH, (_event, _args) => {
+  app.relaunch();
+});
+
+ipcMain.handle(CHAN_DIALOG_SHOWSAVE, (_event, args) => {
+  const { defaultPath, filters } = args;
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  return focusedWindow && dialog.showSaveDialog(
+    focusedWindow,
+    { defaultPath, filters },
+  );
+});
+
+ipcMain.on(CHAN_SHELL_OPEN_EXTERNAL, (_event, args) => {
+  const { url, options } = args;
+  shell.openExternal(url, options);
 });
 
 ipcMain.on(CHAN_RENDERER_TO_MAIN, (_event, msg) => {
