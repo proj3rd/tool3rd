@@ -1,4 +1,4 @@
-import { Button, Checkbox, Form, Input, InputNumber, Modal, ModalProps, Select } from "antd";
+import { Button, Checkbox, Form, Input, InputNumber, Modal, ModalProps, Select, Typography } from "antd";
 import { useForm } from "antd/lib/form/Form";
 import Store from "electron-store";
 import { isEqual } from "lodash";
@@ -60,7 +60,7 @@ export default function ModalSettings({ ...modalProps }: Props) {
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
       >
-        Proxy
+        <Typography.Text strong>Proxy</Typography.Text>
         <Form.Item
           name={['proxy', 'use']} label='Use'
           valuePropName='checked'
@@ -70,7 +70,7 @@ export default function ModalSettings({ ...modalProps }: Props) {
         <Form.Item label='HTTPS proxy'>
           <Input.Group compact>
             <Form.Item name={['proxy', 'https', 'protocol']}>
-              <Select placeholder='Protocol'>
+              <Select placeholder='Protocol' style={{ minWidth: '100px'}}>
                 <Option key='http' value='http'>http://</Option>
                 <Option key='https' value='https'>https://</Option>
               </Select>
@@ -86,12 +86,12 @@ export default function ModalSettings({ ...modalProps }: Props) {
             </Form.Item>
           </Input.Group>
         </Form.Item>
-        Security
+        <Typography.Text strong>Security</Typography.Text>
         <Form.Item name={['security', 'cert']} label='Certificate'>
           <Input />
         </Form.Item>
         <Form.Item
-          name={['security', 'rejectUnauthorized']} label='Skip verify CA'
+          name={['security', 'rejectUnauthorized']} label='Verify CA'
           valuePropName='checked'
         >
           <Checkbox />
