@@ -87,9 +87,9 @@ export default function ModalSettings({ ...modalProps }: Props) {
           </Input.Group>
         </Form.Item>
         <Typography.Text strong>Security</Typography.Text>
-        <Form.Item name={['security', 'cert']} label='Certificate'>
+        {/* <Form.Item name={['security', 'cert']} label='Certificate'>
           <Input />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           name={['security', 'rejectUnauthorized']} label='Verify CA'
           valuePropName='checked'
