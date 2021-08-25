@@ -1,11 +1,12 @@
-import { Button, Form, Modal, ModalProps } from "antd";
+import { Button, Checkbox, Form, Input, InputNumber, Modal, ModalProps, Select } from "antd";
 import { useForm } from "antd/lib/form/Form";
-import TextArea from "antd/lib/input/TextArea";
 import Store from "electron-store";
 import { isEqual } from "lodash";
 import React, { useEffect, useState } from "react";
 import { ipcRenderer } from "electron";
 import { CHAN_APP_EXIT, CHAN_APP_RELAUNCH } from "../types";
+
+const { Option } = Select;
 
 type Props = {} & ModalProps;
 
@@ -18,25 +19,20 @@ export default function ModalSettings({ ...modalProps }: Props) {
   const [settingsChanged, setSettingsChanged] = useState(false);
 
   useEffect(() => {
-    formSettings.setFieldsValue({
-      settings: JSON.stringify(store.store, null, 4),
-    });
+    formSettings.setFieldsValue(store.store);
   }, [visible]);
 
   function applyAndRelaunch() {
-    store.set(JSON.parse(formSettings.getFieldValue('settings')));
+    store.set(formSettings.getFieldsValue());
     ipcRenderer.send(CHAN_APP_RELAUNCH);
     ipcRenderer.send(CHAN_APP_EXIT);
   }
 
   function checkSettingsChanged() {
-    const settingsNew = formSettings.getFieldValue('settings');
-    try {
-      setSettingsChanged(!isEqual(store.store, JSON.parse(settingsNew)));
-    } catch (e) {
-      console.error(e);
-      console.log('settingsChanged remains', settingsChanged);
-    }
+    const { proxy, security } = store.store;
+    const { proxy: proxyNew, security: securityNew } = formSettings.getFieldsValue();
+    const settingsChanged = !isEqual(proxy, proxyNew) || !isEqual(security, securityNew);
+    setSettingsChanged(settingsChanged);
   }
 
   function onValuesChange() {
@@ -56,13 +52,49 @@ export default function ModalSettings({ ...modalProps }: Props) {
           Apply & relaunch
         </Button>
       }
+      width={640}
     >
       <Form
         name='settings' form={formSettings}
         onValuesChange={onValuesChange}
+        labelCol={{ span: 6 }}
+        wrapperCol={{ span: 18 }}
       >
-        <Form.Item name='settings'>
-          <TextArea autoSize={true} />
+        Proxy
+        <Form.Item
+          name={['proxy', 'use']} label='Use'
+          valuePropName='checked'
+        >
+          <Checkbox />
+        </Form.Item>
+        <Form.Item label='HTTPS proxy'>
+          <Input.Group compact>
+            <Form.Item name={['proxy', 'https', 'protocol']}>
+              <Select placeholder='Protocol'>
+                <Option key='http' value='http'>http://</Option>
+                <Option key='https' value='https'>https://</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name={['proxy', 'https', 'host']}>
+              <Input placeholder='Host' />
+            </Form.Item>
+            <Form.Item name={['proxy', 'https', 'port']}>
+              <InputNumber
+                placeholder='Port'
+                min={1} max={65535}
+              />
+            </Form.Item>
+          </Input.Group>
+        </Form.Item>
+        Security
+        <Form.Item name={['security', 'cert']} label='Certificate'>
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name={['security', 'rejectUnauthorized']} label='Skip verify CA'
+          valuePropName='checked'
+        >
+          <Checkbox />
         </Form.Item>
       </Form>
     </Modal>

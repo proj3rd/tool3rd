@@ -76,3 +76,13 @@ export type MSG_RESOURCE_STATE_REQ = {
   resourceId: number;
   state: boolean;
 };
+
+export type SETTINGS_PROXY_0_0_0 = {
+  use: boolean;
+  https: {
+    protocol: string;
+    host: string;
+    port: number;
+  },
+  rejectUnauthorized: boolean;
+};

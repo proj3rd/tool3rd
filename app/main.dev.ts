@@ -31,6 +31,7 @@ import {
   CHAN_APP_EXIT,
   CHAN_APP_RELAUNCH,
   CHAN_DIALOG_SHOWSAVE,
+  SETTINGS_PROXY_0_0_0,
 } from './types';
 
 /**
@@ -38,18 +39,33 @@ import {
  * - Development: {appData}/Electron
  * - Production: {appData}/{appName}
  */
-const store = new Store();
-if (!store.has('proxy')) {
-  store.set('proxy', {
-    use: false,
-    https: {
-      protocol: '',
-      host: '',
-      port: 0,
+const store = new Store({
+  defaults: {
+    proxy: {
+      use: false,
+      https: {
+        protocol: '',
+        host: '',
+        port: 0,
+      },
     },
-    rejectUnauthorized: true,
-  });
-}
+    security: {
+      cert: '',
+      rejectUnauthorized: true,
+    }
+  },
+  migrations: {
+    '1.15.0': (store) => {
+      const proxy = store.get('proxy') as SETTINGS_PROXY_0_0_0;
+      const { rejectUnauthorized, ...proxyNew } = proxy;
+      if (rejectUnauthorized !== undefined) {
+        store.set('proxy', proxyNew);
+        store.set('security.rejectUnauthorized', rejectUnauthorized);
+      }
+    }
+  }
+});
+const { cert, rejectUnauthorized } = store.get('security');
 
 export default class AppUpdater {
   constructor() {
@@ -141,7 +157,11 @@ const workerPath =
     : 'app.asar/dist/worker.js';
 const workerCwd =
   process.env.NODE_ENV === 'development' ? undefined : join(__dirname, '..');
-const worker = fork(workerPath, { cwd: workerCwd });
+const envWorker = Object.assign({}, process.env, {
+  NODE_EXTRA_CA_CERTS: cert,
+  NODE_TLS_REJECT_UNAUTHORIZED: Number(rejectUnauthorized).toString(),
+});
+const worker = fork(workerPath, { cwd: workerCwd, env: envWorker });
 
 worker.on('message', (msg) => {
   const { dst, type } = msg;

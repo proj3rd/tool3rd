@@ -8,10 +8,6 @@ import { cloneDeep } from 'lodash';
 import { parse } from 'path';
 import 'regenerator-runtime/runtime';
 import { getHeapStatistics } from 'v8';
-import {
-  ContentDirectory,
-  ContentDirectoryItem,
-} from 'github-rest.d.ts/dist/repos/content';
 import { Modules } from 'lib3rd/dist/asn1/classes/modules';
 import { ValueAssignment } from 'lib3rd/dist/asn1/classes/valueAssignment';
 import { Definitions } from 'lib3rd/dist/ran3/classes/definitions';
@@ -555,7 +551,6 @@ process.on('message', (msg) => {
       if (!use || !https) {
         break;
       }
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = Number(rejectUnauthorized).toString();
       const httpsProxyAgent = new HttpsProxyAgent({
         protocol: https.protocol,
         host: https.host,
