@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { Workbook } from 'exceljs';
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { asn1, ran3 } from 'lib3rd';
 import { cloneDeep } from 'lodash';
 import { parse } from 'path';
@@ -14,7 +14,6 @@ import { Definitions } from 'lib3rd/dist/ran3/classes/definitions';
 import { todo, unreach } from 'unimpl';
 import { ChildProcess } from 'child_process';
 import { getWorkbook } from 'lib3rd/dist/common/spreadsheet';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import {
   ID_WORKER,
   ID_RENDERER,
@@ -50,6 +49,11 @@ import {
   TYPE_VERSION,
   TYPE_SPEC_LIST,
 } from './types';
+import { HttpsProxyAgentWithCa } from './httpsProxyAgentWithCa';
+
+const sslRootCas = require('ssl-root-cas');
+
+const { NODE_EXTRA_CA_CERTS } = process.env;
 
 const PROC = <ChildProcess>(<unknown>process);
 
@@ -551,11 +555,16 @@ process.on('message', (msg) => {
       if (!use || !https) {
         break;
       }
-      const httpsProxyAgent = new HttpsProxyAgent({
+      const ca = sslRootCas.create();
+      if (NODE_EXTRA_CA_CERTS && existsSync(NODE_EXTRA_CA_CERTS)) {
+        ca.addFile(NODE_EXTRA_CA_CERTS);
+      }
+      const httpsProxyAgent = new HttpsProxyAgentWithCa({
         protocol: https.protocol,
         host: https.host,
         port: https.port,
         rejectUnauthorized,
+        ca,
       });
       axios.defaults.httpsAgent = httpsProxyAgent;
       break;

@@ -1,7 +1,7 @@
 {
   "name": "tool3rd",
   "productName": "tool3rd",
-  "version": "1.15.1",
+  "version": "1.16.0",
   "description": "tool3rd",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\" \"yarn build-worker\"",
@@ -272,6 +272,7 @@
     "semantic-ui-react": "^1.2.0",
     "semver-compare": "^1.0.0",
     "source-map-support": "^0.5.19",
+    "ssl-root-cas": "^1.3.1",
     "unimpl": "^1.2.4"
   },
   "devEngines": {
