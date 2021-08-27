@@ -2,10 +2,9 @@
 
 Assistant for 3GPP telecommunication development
 
-- [tool3rd](#tool3rd)
-  - [How to Use](#how-to-use)
-  - [Library](#library)
-  - [Sponsor](#sponsor)
+- [How to Use](#how-to-use)
+- [Library](#library)
+- [Sponsor](#sponsor)
 
 ## How to Use
 
@@ -24,4 +23,4 @@ tool3rd is based on a library [lib3rd](https://github.com/proj3rd/lib3rd)
 Currently, tool3rd is a non-commercial project.
 Please consider sponsor for this project to grow
 
-- Bitcoin: 1CYuPZZSTY95hyY5gX1ptPQz9r2ihkDJua
+<a href="https://www.buymeacoffee.com/proj3rd" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
