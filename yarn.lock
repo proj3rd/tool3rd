@@ -13916,10 +13916,9 @@ sshpk@^1.7.0:
     safer-buffer "^2.0.2"
     tweetnacl "~0.14.0"
 
-ssl-root-cas@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/ssl-root-cas/-/ssl-root-cas-1.3.1.tgz#6b0566f7de4f0e6be99fbd93dbfbe5c7ab33b949"
-  integrity sha512-KR8J210Wfvjh+iNE9jcQEgbG0VG2713PHreItx6aNCPnkFO8XChz1cJ4iuCGeBj0+8wukLmgHgJqX+O5kRjPkQ==
+ssl-root-cas@gsongsong/ssl-root-cas:
+  version "1.4.0"
+  resolved "https://codeload.github.com/gsongsong/ssl-root-cas/tar.gz/2c2f80498e06cfb501cf043aa618f8d099a153bf"
   dependencies:
     "@coolaj86/urequest" "^1.3.6"
 

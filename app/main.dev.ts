@@ -32,6 +32,7 @@ import {
   CHAN_APP_RELAUNCH,
   CHAN_DIALOG_SHOWSAVE,
   SETTINGS_PROXY_0_0_0,
+  CHAN_BROWSE_CERTIFICATE,
 } from './types';
 
 /**
@@ -205,6 +206,13 @@ ipcMain.on(CHAN_APP_EXIT, (_event, _args) => {
 
 ipcMain.on(CHAN_APP_RELAUNCH, (_event, _args) => {
   app.relaunch();
+});
+
+ipcMain.handle(CHAN_BROWSE_CERTIFICATE, (_event, _args) => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  return focusedWindow && dialog.showOpenDialog(
+    focusedWindow,
+  );
 });
 
 ipcMain.handle(CHAN_DIALOG_SHOWSAVE, (_event, args) => {
