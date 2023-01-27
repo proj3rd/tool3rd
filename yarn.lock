@@ -13917,8 +13917,8 @@ sshpk@^1.7.0:
     tweetnacl "~0.14.0"
 
 ssl-root-cas@gsongsong/ssl-root-cas:
-  version "1.4.0"
-  resolved "https://codeload.github.com/gsongsong/ssl-root-cas/tar.gz/2c2f80498e06cfb501cf043aa618f8d099a153bf"
+  version "1.4.1"
+  resolved "https://codeload.github.com/gsongsong/ssl-root-cas/tar.gz/d257cb96c19f9c0e6ebfb3aad188069888b89e33"
   dependencies:
     "@coolaj86/urequest" "^1.3.6"
 
