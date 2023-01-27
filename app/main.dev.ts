@@ -10,11 +10,63 @@
  */
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import path from 'path';
-import { app, BrowserWindow } from 'electron';
+import path, { join } from 'path';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import Store from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import MenuBuilder from './menu';
+import { fork } from 'child_process';
+import {
+  ID_RENDERER,
+  CHAN_RENDERER_TO_WORKER,
+  CHAN_WORKER_TO_RENDERER,
+  CHAN_WORKER_ERROR,
+  TYPE_ERROR,
+  ID_MAIN,
+  TYPE_SETTINGS,
+  ID_WORKER,
+  CHAN_RENDERER_TO_MAIN,
+  TYPE_EDIT_SETTINGS,
+  CHAN_SHELL_OPEN_EXTERNAL,
+  CHAN_APP_EXIT,
+  CHAN_APP_RELAUNCH,
+  CHAN_DIALOG_SHOWSAVE,
+  SETTINGS_PROXY_0_0_0,
+  CHAN_BROWSE_CERTIFICATE,
+} from './types';
+
+/**
+ * Path
+ * - Development: {appData}/Electron
+ * - Production: {appData}/{appName}
+ */
+const store = new Store({
+  defaults: {
+    proxy: {
+      use: false,
+      https: {
+        protocol: '',
+        host: '',
+        port: 0,
+      },
+    },
+    security: {
+      cert: '',
+      rejectUnauthorized: true,
+    }
+  },
+  migrations: {
+    '1.15.0': (store) => {
+      const proxy = store.get('proxy') as SETTINGS_PROXY_0_0_0;
+      const { rejectUnauthorized, ...proxyNew } = proxy;
+      if (rejectUnauthorized !== undefined) {
+        store.set('proxy', proxyNew);
+        store.set('security.rejectUnauthorized', rejectUnauthorized);
+      }
+    }
+  }
+});
+const { cert, rejectUnauthorized } = store.get('security');
 
 export default class AppUpdater {
   constructor() {
@@ -58,19 +110,22 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    minWidth: 1366,
+    minHeight: 768,
     webPreferences:
       (process.env.NODE_ENV === 'development' ||
         process.env.E2E_BUILD === 'true') &&
       process.env.ERB_SECURE !== 'true'
         ? {
             nodeIntegration: true,
+            enableRemoteModule: true,
           }
         : {
             preload: path.join(__dirname, 'dist/renderer.prod.js'),
+            enableRemoteModule: true,
           },
   });
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
@@ -92,13 +147,104 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
-
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
 };
+
+const workerPath =
+  process.env.NODE_ENV === 'development'
+    ? 'app/worker.js'
+    : 'app.asar/dist/worker.js';
+const workerCwd =
+  process.env.NODE_ENV === 'development' ? undefined : join(__dirname, '..');
+const envWorker = Object.assign({}, process.env, {
+  NODE_EXTRA_CA_CERTS: cert,
+  NODE_TLS_REJECT_UNAUTHORIZED: Number(rejectUnauthorized).toString(),
+});
+const worker = fork(workerPath, { cwd: workerCwd, env: envWorker });
+
+worker.on('message', (msg) => {
+  const { dst, type } = msg;
+  if (dst === ID_RENDERER) {
+    if (mainWindow === null) {
+      return;
+    }
+    switch (type) {
+      case TYPE_ERROR: {
+        const { error } = msg;
+        mainWindow.webContents.send(CHAN_WORKER_ERROR, error);
+        break;
+      }
+      default: {
+        mainWindow.webContents.send(CHAN_WORKER_TO_RENDERER, msg);
+        break;
+      }
+    }
+  }
+  if (dst === ID_MAIN) {
+    switch (type) {
+      case TYPE_SETTINGS: {
+        worker.send({
+          src: ID_MAIN,
+          dst: ID_WORKER,
+          type: TYPE_SETTINGS,
+          settings: store.store,
+        });
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+});
+
+ipcMain.on(CHAN_APP_EXIT, (_event, _args) => {
+  app.exit();
+});
+
+ipcMain.on(CHAN_APP_RELAUNCH, (_event, _args) => {
+  app.relaunch();
+});
+
+ipcMain.handle(CHAN_BROWSE_CERTIFICATE, (_event, _args) => {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  return focusedWindow && dialog.showOpenDialog(
+    focusedWindow,
+  );
+});
+
+ipcMain.handle(CHAN_DIALOG_SHOWSAVE, (_event, args) => {
+  const { defaultPath, filters } = args;
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  return focusedWindow && dialog.showSaveDialog(
+    focusedWindow,
+    { defaultPath, filters },
+  );
+});
+
+ipcMain.on(CHAN_SHELL_OPEN_EXTERNAL, (_event, args) => {
+  const { url, options } = args;
+  shell.openExternal(url, options);
+});
+
+ipcMain.on(CHAN_RENDERER_TO_MAIN, (_event, msg) => {
+  const { type } = msg;
+  switch (type) {
+    case TYPE_EDIT_SETTINGS: {
+      store.openInEditor();
+      break;
+    }
+    default: {
+      break;
+    };
+  }
+});
+
+ipcMain.on(CHAN_RENDERER_TO_WORKER, (_event, msg) => {
+  worker.send(msg);
+});
 
 /**
  * Add event listeners...

@@ -3,45 +3,40 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 @import '~@fortawesome/fontawesome-free/css/all.css';
+@import '~antd/dist/antd.css';
+@import '~semantic-ui-css/semantic.min.css';
 
-body {
-  position: relative;
-  color: white;
-  height: 100vh;
-  background-color: #232c39;
-  background-image: linear-gradient(
-    45deg,
-    rgba(0, 216, 255, 0.5) 10%,
-    rgba(0, 1, 127, 0.7)
-  );
-  font-family: Arial, Helvetica, Helvetica Neue, serif;
-  overflow-y: hidden;
+#root {
+  height: 100%;
 }
 
-h2 {
+div.ui.grid {
+  height: 100%;
   margin: 0;
-  font-size: 2.25rem;
-  font-weight: bold;
-  letter-spacing: -0.025em;
-  color: #fff;
 }
 
-p {
-  font-size: 24px;
+#main {
+  height: 100%;
+  overflow-y: auto;
 }
 
-li {
-  list-style: none;
+.format-ie-list {
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
-a {
-  color: white;
-  opacity: 0.75;
-  text-decoration: none;
+#aside {
+  height: 100%;
+  overflow-y: auto;
 }
 
-a:hover {
-  opacity: 1;
-  text-decoration: none;
-  cursor: pointer;
+#workerError {
+  font-family: monospace;
+}
+
+#toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: 50%;
 }
