@@ -51,7 +51,7 @@ import {
 } from './types';
 import { HttpsProxyAgentWithCa } from './httpsProxyAgentWithCa';
 
-const sslRootCas = require('ssl-root-cas/latest');
+const sslRootCas = require('ssl-root-cas');
 
 const { NODE_EXTRA_CA_CERTS } = process.env;
 
