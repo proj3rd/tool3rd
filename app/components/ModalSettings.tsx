@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-import React, { createRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ipcRenderer } from 'electron';
 import {
   CHAN_APP_EXIT,
@@ -12,82 +12,41 @@ type Props = { visible?: boolean; onCancel?: () => void };
 export default function ModalSettings({ visible, onCancel }: Props) {
   const store = new Store();
 
-  const refUseProxy = createRef<HTMLInputElement>();
-  const refProtocol = createRef<HTMLSelectElement>();
-  const refHost = createRef<HTMLInputElement>();
-  const refPort = createRef<HTMLInputElement>();
+  const [useProxy, setUseProxy] = useState(false);
+  const [protocol, setProtocol] = useState('');
+  const [host, setHost] = useState('');
+  const [port, setPort] = useState(0);
   const [cert, setCert] = useState('');
-  const refVerifyCa = createRef<HTMLInputElement>();
-
-  const [settingsChanged, setSettingsChanged] = useState(false);
+  const [rejectUnauthorized, setRejectUnauthorized] = useState(true);
 
   useEffect(() => {
-    if (
-      !refUseProxy.current ||
-      !refProtocol.current ||
-      !refHost.current ||
-      !refPort.current ||
-      !refVerifyCa.current
-    ) {
-      return;
-    }
     const { proxy, security } = store.store;
-    refUseProxy.current.checked = (proxy as any).use;
-    refProtocol.current.value = (proxy as any).https.protocol;
-    refHost.current.value = (proxy as any).https.host;
-    refPort.current.value = (proxy as any).https.port;
+    setUseProxy(!!(proxy as any).use);
+    setProtocol((proxy as any).https.protocol);
+    setHost((proxy as any).https.host);
+    setPort((proxy as any).https.port);
     setCert((security as any).cert);
-    refVerifyCa.current.checked = (security as any).rejectUnauthorized;
+    setRejectUnauthorized((security as any).rejectUnauthorized);
   }, [visible]);
 
   function applyAndRelaunch() {
-    if (
-      !refUseProxy.current ||
-      !refProtocol.current ||
-      !refHost.current ||
-      !refPort.current ||
-      !refVerifyCa.current
-    ) {
-      return;
-    }
     const settingsNew = {
       proxy: {
-        use: refUseProxy.current.checked,
+        use: useProxy,
         https: {
-          protocol: refProtocol.current.value,
-          host: refHost.current.value,
-          port: refPort.current.value,
+          protocol,
+          host,
+          port,
         },
       },
       security: {
         cert,
-        rejectUnauthorized: refVerifyCa.current.checked,
+        rejectUnauthorized,
       },
     };
     store.set(settingsNew);
     ipcRenderer.send(CHAN_APP_RELAUNCH);
     ipcRenderer.send(CHAN_APP_EXIT);
-  }
-
-  function checkSettingsChanged() {
-    if (
-      !refUseProxy.current ||
-      !refProtocol.current ||
-      !refHost.current ||
-      !refPort.current ||
-      !refVerifyCa.current
-    ) {
-      return;
-    }
-    const { proxy, security } = store.store;
-    const settingsChanged =
-      refUseProxy.current.checked === (proxy as any).use &&
-      refProtocol.current.value === (proxy as any).https.protocol &&
-      refHost.current.value === (proxy as any).https.host &&
-      refPort.current.value === (proxy as any).https.port &&
-      cert === (security as any).cert &&
-      refVerifyCa.current.checked === (security as any).rejectUnauthorized;
-    setSettingsChanged(settingsChanged);
   }
 
   function onClickBrowse() {
@@ -100,16 +59,20 @@ export default function ModalSettings({ visible, onCancel }: Props) {
         }
         const certPath = filePaths[0];
         setCert(certPath);
-        onValuesChange();
       })
       .catch((reason) => {
         console.error(reason);
       });
   }
 
-  function onValuesChange() {
-    checkSettingsChanged();
-  }
+  const { proxy, security } = store.store;
+  const settingsChanged =
+    useProxy !== (proxy as any).use ||
+    protocol !== (proxy as any).https.protocol ||
+    host !== (proxy as any).https.host ||
+    port !== (proxy as any).https.port ||
+    cert !== (security as any).cert ||
+    rejectUnauthorized !== (security as any).rejectUnauthorized;
 
   return (
     <div className={`modal ${visible ? 'is-active' : ''}`}>
@@ -123,7 +86,11 @@ export default function ModalSettings({ visible, onCancel }: Props) {
           <div className="field">
             <div className="control">
               <label className="checkbox">
-                <input type="checkbox" ref={refUseProxy}></input>
+                <input
+                  type="checkbox"
+                  checked={useProxy}
+                  onChange={(e) => setUseProxy(e.target.checked)}
+                ></input>
                 Use
               </label>
             </div>
@@ -131,7 +98,10 @@ export default function ModalSettings({ visible, onCancel }: Props) {
           <div className="field has-addons">
             <div className="control">
               <div className="select">
-                <select ref={refProtocol}>
+                <select
+                  value={protocol}
+                  onChange={(e) => setProtocol(e.target.value)}
+                >
                   <option value="http">http://</option>
                   <option value="https">https://</option>
                 </select>
@@ -139,7 +109,8 @@ export default function ModalSettings({ visible, onCancel }: Props) {
             </div>
             <div className="control">
               <input
-                ref={refHost}
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
                 className="input"
                 placeholder="host"
                 type="url"
@@ -147,7 +118,8 @@ export default function ModalSettings({ visible, onCancel }: Props) {
             </div>
             <div className="control">
               <input
-                ref={refPort}
+                value={port}
+                onChange={(e) => setPort(Number(e.target.value))}
                 className="input"
                 placeholder="port"
                 type="number"
@@ -179,7 +151,11 @@ export default function ModalSettings({ visible, onCancel }: Props) {
           <div className="field">
             <div className="control">
               <label className="checkbox">
-                <input type="checkbox" ref={refVerifyCa}></input>
+                <input
+                  type="checkbox"
+                  checked={rejectUnauthorized}
+                  onChange={(e) => setRejectUnauthorized(e.target.checked)}
+                ></input>
                 Verify CA
               </label>
             </div>
