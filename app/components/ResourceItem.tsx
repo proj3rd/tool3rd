@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button, Item, Label } from 'semantic-ui-react';
 import { ipcRenderer } from 'electron';
 import {
   CHAN_RENDERER_TO_WORKER,
@@ -32,29 +31,28 @@ function changeResourceState(resourceId: number, state: boolean) {
 
 export default function ResourceItem({ resource }: Props) {
   const { resourceId, name, location, loaded, type } = resource;
-  const buttonColor = loaded ? 'red' : 'green';
+  const buttonColor = loaded ? 'danger' : 'success';
   const buttonText = loaded ? 'Unload' : 'Load';
   const locationLabel = location.startsWith('http') ? 'cloud' : 'local';
   return (
-    <Item>
-      <Item.Content>
-        <Item.Header>{`#${resourceId}. ${name}`}</Item.Header>
-        <Item.Extra>
-          <Label basic color="blue">
-            {type}
-            <Label.Detail>{locationLabel}</Label.Detail>
-          </Label>
-          <Button
-            basic
-            size="mini"
-            color={buttonColor}
-            floated="right"
+    <div className="block">
+      <b>{`#${resourceId}. ${name}`}</b>
+      <div className="level">
+        <div className="level-left">
+          <div className="tags has-addons">
+            <span className="tag">{locationLabel}</span>
+            <span className="tag is-primary">{type}</span>
+          </div>
+        </div>
+        <div className="level-right">
+          <a
+            className={`has-text-${buttonColor} is-size-7`}
             onClick={() => changeResourceState(resourceId, !loaded)}
           >
             {buttonText}
-          </Button>
-        </Item.Extra>
-      </Item.Content>
-    </Item>
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

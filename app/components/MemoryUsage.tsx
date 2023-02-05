@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { Progress } from 'semantic-ui-react';
 import React, { useEffect, useState } from 'react';
 import {
   CHAN_WORKER_TO_RENDERER,
@@ -31,7 +30,7 @@ export default function MemoryUsage() {
     requestMemoryUsage();
     return function cleanup() {
       ipcRenderer.removeListener(CHAN_WORKER_TO_RENDERER, onIpc);
-    }
+    };
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,8 +44,9 @@ export default function MemoryUsage() {
   }
 
   return (
-    <Progress value={used} total={avail} size="tiny">
+    <div className="has-text-centered">
+      <progress className="progress" value={used} max={avail} />
       {`${b2mb(used)} / ${b2mb(avail)} MB used`}
-    </Progress>
+    </div>
   );
 }
