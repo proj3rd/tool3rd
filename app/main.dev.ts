@@ -118,10 +118,12 @@ const createWindow = async () => {
       process.env.ERB_SECURE !== 'true'
         ? {
             nodeIntegration: true,
+            contextIsolation: false,
             enableRemoteModule: true,
           }
         : {
             preload: path.join(__dirname, 'dist/renderer.prod.js'),
+            contextIsolation: false,
             enableRemoteModule: true,
           },
   });
