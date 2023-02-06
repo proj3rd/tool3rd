@@ -217,14 +217,16 @@ export default class Diff extends React.Component<Props, State> {
             </div>
           </div>
         </div>
-        <div>
-          <button
-            className="button"
-            disabled={disabled}
-            onClick={() => this.requestDiff()}
-          >
-            Diff
-          </button>
+        <div className="columns">
+          <div className="column">
+            <button
+              className="button"
+              disabled={disabled}
+              onClick={() => this.requestDiff()}
+            >
+              Diff
+            </button>
+          </div>
         </div>
         {isMessageVisible ? (
           <div className="message is-success">
