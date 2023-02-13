@@ -132,7 +132,7 @@ export default class Diff extends React.Component<Props, State> {
   // eslint-disable-next-line class-methods-use-this
   getOptions(resourceList: Resource[]) {
     return resourceList
-      .filter((resource) => resource.name.endsWith('asn1') && resource.loaded)
+      .filter((resource) => resource.type === 'asn1' && resource.loaded)
       .map((resource) => {
         const { resourceId, name } = resource;
         return {
@@ -187,7 +187,7 @@ export default class Diff extends React.Component<Props, State> {
                     <option disabled selected>
                       Old spec
                     </option>
-                    {options.forEach(({ key, text, value }) => (
+                    {options.map(({ key, text, value }) => (
                       <option key={key} value={value}>
                         {text}
                       </option>
@@ -206,7 +206,7 @@ export default class Diff extends React.Component<Props, State> {
                     <option disabled selected>
                       New spec
                     </option>
-                    {options.forEach(({ key, text, value }) => (
+                    {options.map(({ key, text, value }) => (
                       <option key={key} value={value}>
                         {text}
                       </option>
@@ -217,14 +217,16 @@ export default class Diff extends React.Component<Props, State> {
             </div>
           </div>
         </div>
-        <div>
-          <button
-            className="button"
-            disabled={disabled}
-            onClick={() => this.requestDiff()}
-          >
-            Diff
-          </button>
+        <div className="columns">
+          <div className="column">
+            <button
+              className="button"
+              disabled={disabled}
+              onClick={() => this.requestDiff()}
+            >
+              Diff
+            </button>
+          </div>
         </div>
         {isMessageVisible ? (
           <div className="message is-success">
