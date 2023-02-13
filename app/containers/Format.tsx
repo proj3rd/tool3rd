@@ -1,20 +1,5 @@
 import { debounce } from 'lodash';
-import React from 'react';
-import {
-  Segment,
-  Header,
-  Form,
-  DropdownProps,
-  Message,
-  Grid,
-  Button,
-  DropdownItemProps,
-  InputOnChangeData,
-  Table,
-  Label,
-  Input,
-  Icon,
-} from 'semantic-ui-react';
+import React, { ChangeEvent } from 'react';
 import { ipcRenderer, shell } from 'electron';
 import { Resource } from '../components/ResourceItem';
 import {
@@ -49,7 +34,7 @@ type State = {
   options: { key: number; text: string; value: number; name: string }[];
   resourceId: number | undefined;
   name: string;
-  ieList: DropdownItemProps[];
+  ieList: { key: string; text: string; value: string }[];
   queue: QueueItem[];
   filePath: string;
   isMessageVisible: boolean;
@@ -114,11 +99,8 @@ export default class Format extends React.Component<Props, State> {
     ipcRenderer.removeListener(CHAN_WORKER_TO_RENDERER, this.onIpc);
   }
 
-  onNameChange(
-    _event: React.ChangeEvent<HTMLInputElement>,
-    data: InputOnChangeData
-  ) {
-    const name = data.value;
+  onNameChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value: name } = e.target;
     this.onNameChangeDebounce(name);
   }
 
@@ -127,11 +109,8 @@ export default class Format extends React.Component<Props, State> {
   }, 1000);
 
   // eslint-disable-next-line class-methods-use-this
-  onSpecChange(
-    _event: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) {
-    const value = data.value as number | undefined;
+  onSpecChange(event: ChangeEvent<HTMLSelectElement>) {
+    const value = Number(event.target.value);
     this.setState({ resourceId: value });
     ipcRenderer.send(CHAN_RENDERER_TO_WORKER, {
       src: ID_RENDERER,
@@ -173,15 +152,17 @@ export default class Format extends React.Component<Props, State> {
             defaultPath = `${specFileName}${expandString}.xlsx`;
           }
         }
-        ipcRenderer.invoke(CHAN_DIALOG_SHOWSAVE, {
-          defaultPath,
-          filters: [
-            {
-              name: 'Spreadsheet file',
-              extensions: ['xlsx'],
-            },
-          ],
-        }).then((dialogReturn) => {
+        ipcRenderer
+          .invoke(CHAN_DIALOG_SHOWSAVE, {
+            defaultPath,
+            filters: [
+              {
+                name: 'Spreadsheet file',
+                extensions: ['xlsx'],
+              },
+            ],
+          })
+          .then((dialogReturn) => {
             const { canceled, filePath } = dialogReturn;
             // eslint-disable-next-line promise/always-return
             if (canceled || filePath === undefined) {
@@ -338,202 +319,219 @@ export default class Format extends React.Component<Props, State> {
     } = this.state;
     const disabled = queue.length === 0;
     return (
-      <Segment>
-        <Header as="h1">Format</Header>
-        <Form>
-          <Grid columns={2}>
-            <Grid.Row>
-              <Grid.Column>
-                <Form.Select
-                  label="Spec"
-                  placeholder="Spec"
-                  options={options}
-                  onChange={(event, data) => this.onSpecChange(event, data)}
-                />
-              </Grid.Column>
-            </Grid.Row>
-            <Grid.Row>
-              <Grid.Column>
-                <Input
-                  fluid
-                  label="Filter by name"
-                  onChange={(event, data) => this.onNameChange(event, data)}
-                />
-              </Grid.Column>
-              <Grid.Column>
-                <Button.Group>
-                  <Button disabled active>
-                    Add all
-                  </Button>
-                  <Button
-                    basic
-                    color="green"
-                    disabled={ieList.length === 0}
-                    onClick={() => {
-                      ieList.forEach((ie) => {
-                        const { key } = ie;
-                        this.addToQueue(key, false);
-                      });
-                    }}
-                  >
-                    Normal
-                  </Button>
-                  <Button
-                    basic
-                    color="blue"
-                    disabled={ieList.length === 0}
-                    onClick={() => {
-                      ieList.forEach((ie) => {
-                        const { key } = ie;
-                        this.addToQueue(key, true);
-                      });
-                    }}
-                  >
-                    Expand
-                  </Button>
-                </Button.Group>
-                <Button disabled={disabled} onClick={this.removeAll}>
-                  Remove all
-                </Button>
-                <Button
+      <div className="box">
+        <h1 className="title is-1">Format</h1>
+        <div className="field">
+          <div className="control">
+            <label className="label">Spec</label>
+            <div className="select">
+              <select onChange={this.onSpecChange} defaultValue="placeholder">
+                <option value="placeholder" disabled>
+                  Spec
+                </option>
+                {options.map(({ key, text, value }) => (
+                  <option key={key} value={value}>
+                    {text}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="columns">
+          <div className="column">
+            <div className="field">
+              <div className="control is-expanded">
+                <input
+                  className="input"
+                  placeholder="Filter by name"
+                  onChange={this.onNameChange}
+                ></input>
+              </div>
+            </div>
+          </div>
+          <div className="column">
+            <div className="field has-addons">
+              <div className="control">
+                <button className="button" disabled>
+                  Add all
+                </button>
+              </div>
+              <div className="control">
+                <button
+                  className="button is-success"
+                  disabled={ieList.length === 0}
+                  onClick={() => {
+                    ieList.forEach((ie) => {
+                      const { key } = ie;
+                      this.addToQueue(key, false);
+                    });
+                  }}
+                >
+                  Normal
+                </button>
+              </div>
+              <div className="control">
+                <button
+                  className="button is-info"
+                  disabled={ieList.length === 0}
+                  onClick={() => {
+                    ieList.forEach((ie) => {
+                      const { key } = ie;
+                      this.addToQueue(key, true);
+                    });
+                  }}
+                >
+                  Expand
+                </button>
+              </div>
+            </div>
+            <div className="field is-grouped">
+              <div className="control">
+                <button
+                  className="button"
                   disabled={disabled}
                   onClick={() => this.requestFormat()}
                 >
                   Format
-                </Button>
-              </Grid.Column>
-            </Grid.Row>
-            <Grid.Row columns={1}>
-              <Grid.Column>
-                {isMessageVisible ? (
-                  <Message positive>
-                    <Message.Header>Format success</Message.Header>
-                    <Message.Content>
-                      <Button
-                        icon
-                        size="tiny"
-                        basic
-                        color="green"
-                        onClick={() => {
-                          shell.openExternal(filePath);
-                        }}
-                      >
-                        <Icon name="file excel" />
-                        Open file
-                      </Button>
-                      <Button
-                        icon
-                        size="tiny"
-                        basic
-                        color="blue"
-                        onClick={() => {
-                          shell.showItemInFolder(filePath);
-                        }}
-                      >
-                        <Icon name="folder" />
-                        Open folder
-                      </Button>
-                    </Message.Content>
-                  </Message>
-                ) : (
-                  <></>
-                )}
-              </Grid.Column>
-            </Grid.Row>
-            <Grid.Row>
-              <Grid.Column>
-                <Segment className="format-ie-list">
-                  <Label attached="top">Pool</Label>
-                  <Table>
-                    <Table.Header>
-                      <Table.Row>
-                        <Table.HeaderCell>Name</Table.HeaderCell>
-                        <Table.HeaderCell collapsing>Format</Table.HeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {ieList
-                        .filter((ie) =>
-                          (ie.text as string)
-                            .toLowerCase()
-                            .includes(name.toLowerCase())
-                        )
-                        .map((ie) => {
-                          const { key } = ie;
-                          return (
-                            <Table.Row key={key}>
-                              <Table.Cell>{ie.text}</Table.Cell>
-                              <Table.Cell>
-                                <Button.Group size="tiny">
-                                  <Button
-                                    basic
-                                    color="green"
-                                    onClick={() => this.addToQueue(key, false)}
-                                  >
-                                    Normal
-                                  </Button>
-                                  <Button
-                                    basic
-                                    color="blue"
-                                    onClick={() => this.addToQueue(key, true)}
-                                  >
-                                    Expand
-                                  </Button>
-                                </Button.Group>
-                              </Table.Cell>
-                            </Table.Row>
-                          );
-                        })}
-                    </Table.Body>
-                  </Table>
-                </Segment>
-              </Grid.Column>
-              <Grid.Column>
-                <Segment className="format-ie-list">
-                  <Label attached="top">Queue</Label>
-                  <Table>
-                    <Table.Header>
-                      <Table.Row>
-                        <Table.HeaderCell>Name</Table.HeaderCell>
-                        <Table.HeaderCell>Spec</Table.HeaderCell>
-                        <Table.HeaderCell collapsing>Expand</Table.HeaderCell>
-                        <Table.HeaderCell collapsing>Remove</Table.HeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {queue.map((ie) => {
-                        const { key, resourceId, ieName, expand } = ie;
-                        const optionIndex = options.findIndex((option) => {
-                          return option.key === resourceId;
-                        });
-                        const specFileName = options[optionIndex].name;
-                        return (
-                          <Table.Row key={key}>
-                            <Table.Cell>{ieName}</Table.Cell>
-                            <Table.Cell>{specFileName}</Table.Cell>
-                            <Table.Cell>{expand ? 'Expand' : ''}</Table.Cell>
-                            <Table.Cell>
-                              <Button.Group size="tiny">
-                                <Button
-                                  basic
-                                  color="grey"
-                                  onClick={() => this.removeFromQueue(key)}
+                </button>
+              </div>
+              <div className="control">
+                <button
+                  className="button"
+                  disabled={disabled}
+                  onClick={this.removeAll}
+                >
+                  Remove all
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          {isMessageVisible ? (
+            <div className="message is-success">
+              <div className="message-header">Format success</div>
+              <div className="message-body">
+                <div className="buttons">
+                  <button
+                    className="button is-success"
+                    onClick={() => {
+                      shell.openExternal(filePath);
+                    }}
+                  >
+                    <span className="icon">
+                      <i className="mdi mdi-file-excel"></i>
+                    </span>
+                    <span>Open file</span>
+                  </button>
+                  <button
+                    className="button is-info"
+                    onClick={() => {
+                      shell.showItemInFolder(filePath);
+                    }}
+                  >
+                    <span className="icon">
+                      <i className="mdi mdi-folder"></i>
+                    </span>
+                    <span>Open folder</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <></>
+          )}
+        </div>
+        <div className="columns">
+          <div className="column">
+            <div className="format-ie-list">
+              <table className="table is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Format</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ieList
+                    .filter((ie) =>
+                      (ie.text as string)
+                        .toLowerCase()
+                        .includes(name.toLowerCase())
+                    )
+                    .map((ie) => {
+                      const { key } = ie;
+                      return (
+                        <tr key={key}>
+                          <td>{ie.text}</td>
+                          <td>
+                            <div className="field has-addons">
+                              <div className="control">
+                                <button
+                                  className="button is-success"
+                                  onClick={() => this.addToQueue(key, false)}
                                 >
-                                  Remove
-                                </Button>
-                              </Button.Group>
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table>
-                </Segment>
-              </Grid.Column>
-            </Grid.Row>
-          </Grid>
-        </Form>
-      </Segment>
+                                  Normal
+                                </button>
+                              </div>
+                              <div className="control">
+                                <button
+                                  className="button is-info"
+                                  onClick={() => this.addToQueue(key, true)}
+                                >
+                                  Expand
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="column">
+            <div className="format-ie-list">
+              <table className="table is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Spec</th>
+                    <th>Expand</th>
+                    <th>Remove</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {queue.map((ie) => {
+                    const { key, resourceId, ieName, expand } = ie;
+                    const optionIndex = options.findIndex((option) => {
+                      return option.key === resourceId;
+                    });
+                    const specFileName = options[optionIndex].name;
+                    return (
+                      <tr key={key}>
+                        <td>{ieName}</td>
+                        <td>{specFileName}</td>
+                        <td>{expand ? 'Expand' : ''}</td>
+                        <td>
+                          <button
+                            className="button"
+                            onClick={() => this.removeFromQueue(key)}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 }

@@ -1,14 +1,4 @@
-import React from 'react';
-import {
-  Segment,
-  Header,
-  DropdownProps,
-  Message,
-  Grid,
-  Form,
-  Button,
-  Icon,
-} from 'semantic-ui-react';
+import React, { ChangeEvent } from 'react';
 import { ipcRenderer, shell } from 'electron';
 import { Resource } from '../components/ResourceItem';
 import {
@@ -71,12 +61,8 @@ export default class Diff extends React.Component<Props, State> {
     ipcRenderer.removeListener(CHAN_WORKER_TO_RENDERER, this.onIpc);
   }
 
-  onChange(
-    _event: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps,
-    oldNew: 'old' | 'new'
-  ) {
-    const value = data.value as number | undefined;
+  onChange(event: ChangeEvent<HTMLSelectElement>, oldNew: 'old' | 'new') {
+    const value = Number(event.target.value);
     if (oldNew === 'old') {
       this.setState({ valueOld: value });
     }
@@ -95,15 +81,17 @@ export default class Diff extends React.Component<Props, State> {
         const optionNew = options.find((option) => option.key === valueNew);
         const nameOld = optionOld ? optionOld.name : '';
         const nameNew = optionNew ? optionNew.name : '';
-        ipcRenderer.invoke(CHAN_DIALOG_SHOWSAVE, {
-          defaultPath: `diff_${nameOld}_${nameNew}.htm`,
-          filters: [
-            {
-              name: 'Web page file',
-              extensions: ['htm', 'html'],
-            },
-          ],
-        }).then((dialogReturn) => {
+        ipcRenderer
+          .invoke(CHAN_DIALOG_SHOWSAVE, {
+            defaultPath: `diff_${nameOld}_${nameNew}.htm`,
+            filters: [
+              {
+                name: 'Web page file',
+                extensions: ['htm', 'html'],
+              },
+            ],
+          })
+          .then((dialogReturn) => {
             const { canceled, filePath } = dialogReturn;
             // eslint-disable-next-line promise/always-return
             if (canceled || filePath === undefined) {
@@ -144,7 +132,7 @@ export default class Diff extends React.Component<Props, State> {
   // eslint-disable-next-line class-methods-use-this
   getOptions(resourceList: Resource[]) {
     return resourceList
-      .filter((resource) => resource.name.endsWith('asn1') && resource.loaded)
+      .filter((resource) => resource.type === 'asn1' && resource.loaded)
       .map((resource) => {
         const { resourceId, name } = resource;
         return {
@@ -187,74 +175,93 @@ export default class Diff extends React.Component<Props, State> {
     const disabled =
       valueOld === undefined || valueNew === undefined || valueOld === valueNew;
     return (
-      <Segment>
-        <Header as="h1">Diff</Header>
-        <Form>
-          <Grid columns={2}>
-            <Grid.Row>
-              <Grid.Column>
-                <Form.Select
-                  label="Old spec"
-                  placeholder="Old spec"
-                  options={options}
-                  onChange={(event, data) => this.onChange(event, data, 'old')}
-                />
-              </Grid.Column>
-              <Grid.Column>
-                <Form.Select
-                  label="New spec"
-                  placeholder="New spec"
-                  options={options}
-                  onChange={(event, data) => this.onChange(event, data, 'new')}
-                />
-              </Grid.Column>
-            </Grid.Row>
-            <Grid.Row>
-              <Grid.Column>
-                <Form.Button
-                  disabled={disabled}
-                  onClick={() => this.requestDiff()}
-                >
-                  Diff
-                </Form.Button>
-              </Grid.Column>
-            </Grid.Row>
-          </Grid>
-        </Form>
+      <div className="box">
+        <h1 className="title is-1">Diff</h1>
+        <div className="columns">
+          <div className="column">
+            <div className="field">
+              <label className="label">Old spec</label>
+              <div className="control">
+                <div className="select">
+                  <select onChange={(e) => this.onChange(e, 'old')}>
+                    <option disabled selected>
+                      Old spec
+                    </option>
+                    {options.map(({ key, text, value }) => (
+                      <option key={key} value={value}>
+                        {text}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="column">
+            <div className="field">
+              <label className="label">New spec</label>
+              <div className="control">
+                <div className="select">
+                  <select onChange={(e) => this.onChange(e, 'new')}>
+                    <option disabled selected>
+                      New spec
+                    </option>
+                    {options.map(({ key, text, value }) => (
+                      <option key={key} value={value}>
+                        {text}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="columns">
+          <div className="column">
+            <button
+              className="button"
+              disabled={disabled}
+              onClick={() => this.requestDiff()}
+            >
+              Diff
+            </button>
+          </div>
+        </div>
         {isMessageVisible ? (
-          <Message positive>
-            <Message.Header>Diff success</Message.Header>
-            <Message.Content>
-              <Button
-                icon
-                size="tiny"
-                basic
-                color="green"
-                onClick={() => {
-                  shell.openExternal(filePath);
-                }}
-              >
-                <Icon name="file text" />
-                Open file
-              </Button>
-              <Button
-                icon
-                size="tiny"
-                basic
-                color="blue"
-                onClick={() => {
-                  shell.showItemInFolder(filePath);
-                }}
-              >
-                <Icon name="folder" />
-                Open folder
-              </Button>
-            </Message.Content>
-          </Message>
+          <div className="message is-success">
+            <div className="message-header">Diff success</div>
+            <div className="message-body">
+              <div className="buttons">
+                <button
+                  className="button is-success"
+                  onClick={() => {
+                    shell.openExternal(filePath);
+                  }}
+                >
+                  <span className="icon">
+                    <i className="mdi mdi-file-compare"></i>
+                  </span>
+                  <span>Open file</span>
+                </button>
+                <button
+                  className="button is-info"
+                  onClick={() => {
+                    shell.showItemInFolder(filePath);
+                  }}
+                >
+                  <span className="icon">
+                    <i className="mdi mdi-folder"></i>
+                  </span>
+                  <span>Open folder</span>
+                </button>
+              </div>
+            </div>
+          </div>
         ) : (
           <></>
         )}
-      </Segment>
+      </div>
     );
   }
 }

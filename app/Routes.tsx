@@ -1,20 +1,6 @@
 /* eslint react/jsx-props-no-spreading: off */
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import {
-  Grid,
-  Divider,
-  Item,
-  Dimmer,
-  Loader,
-  Modal,
-  Form,
-  Button,
-  Message,
-  Header,
-  Container,
-  List,
-} from 'semantic-ui-react';
 import { ipcRenderer } from 'electron';
 import semverCompare from 'semver-compare';
 import routes from './constants/routes.json';
@@ -44,11 +30,15 @@ import {
 import Diff from './containers/Diff';
 import Format from './containers/Format';
 import { version } from './package.json';
-import { Col, Menu, Row, Tag, Typography } from 'antd';
 import ModalSettings from './components/ModalSettings';
-import { GH_LIB3RD_REPO, GH_SPEC_ARCHIVE, GH_SPEC_REPO, GH_TOOL3RD_ISSUES, GH_TOOL3RD_RELEASES, GH_TOOL3RD_REPO } from './constants/urls';
-
-const { SubMenu } = Menu;
+import {
+  GH_SPEC_ARCHIVE,
+  GH_SPEC_REPO,
+  GH_TOOL3RD_ISSUES,
+  GH_TOOL3RD_RELEASES,
+} from './constants/urls';
+import ModalAbout from './components/ModalAbout';
+import ModalLoadFromCloud from './components/ModalLoadFromCloud';
 
 type Toast = {
   key: number;
@@ -62,9 +52,13 @@ type State = {
   workerError: Error | null;
   showAbout: boolean;
   toastList: Toast[];
+  modalLoadFromCloudVisible: boolean;
   modalSettingsVisible: boolean;
   numToast: number;
-  specList: { name: string; children: { name: string; children: string[]; }[]; }[];
+  specList: {
+    name: string;
+    children: { name: string; children: string[] }[];
+  }[];
   versionLatest: string | undefined;
 };
 
@@ -83,6 +77,7 @@ export default class Routes extends React.Component<
       showAbout: false,
       toastList: [],
       numToast: 0,
+      modalLoadFromCloudVisible: false,
       modalSettingsVisible: false,
       specList: [],
       versionLatest: undefined,
@@ -228,150 +223,137 @@ export default class Routes extends React.Component<
       workerError,
       showAbout,
       toastList,
+      modalLoadFromCloudVisible,
       modalSettingsVisible,
       specList,
       versionLatest,
     } = this.state;
     return (
       <App>
-        <Grid>
-          <Grid.Column width={13} id="main">
-            <Menu mode="horizontal" selectable={false}>
-              <Menu.Item
-                key="header"
-                onClick={() => this.pushHistory("/")}
-              >
-                <Typography.Text strong>tool3rd</Typography.Text>
-              </Menu.Item>
-              <SubMenu key="message" title="Message">
-                <Menu.Item
-                  key="format"
+        <div className="navbar">
+          <div className="navbar-brand">
+            <a className="navbar-item" onClick={() => this.pushHistory('/')}>
+              <b>tool3rd</b>
+            </a>
+          </div>
+          <div className="navbar-start">
+            <div className="navbar-item has-dropdown is-hoverable">
+              <div className="navbar-link">Message</div>
+              <div className="navbar-dropdown">
+                <a
+                  className="navbar-item"
                   onClick={() => this.pushHistory(routes.FORMAT)}
                 >
                   Format
-                </Menu.Item>
-                <Menu.Item
-                  key="diff"
+                </a>
+                <a
+                  className="navbar-item"
                   onClick={() => this.pushHistory(routes.DIFF)}
                 >
-                  Diff ASN.1
-                </Menu.Item>
-              </SubMenu>
-              <SubMenu key="resources" title="Resources">
-                <Menu.Item
-                  key="loadLocalFile"
+                  Diff
+                </a>
+              </div>
+            </div>
+            <div className="navbar-item has-dropdown is-hoverable">
+              <div className="navbar-link">Resources</div>
+              <div className="navbar-dropdown">
+                <a
+                  className="navbar-item"
                   onClick={() => this.fileInputRef.current?.click()}
                 >
                   Load local file
-                </Menu.Item>
-                {
-                  specList.length ? (
-                    <SubMenu key="cloud" title="Load from cloud">
-                      {
-                        specList.map((series: { name: string; children: { name: string; children: string[]; }[]; }) => {
-                          const { name: seriesName, children } = series;
-                          return (
-                            <SubMenu key={seriesName} title={seriesName}>
-                              {
-                                children.map((spec) => {
-                                  const { name: specName, children } = spec;
-                                  return (
-                                    <SubMenu key={specName} title={specName}>
-                                      {
-                                        children.map((version) => {
-                                          const label = version.replace(".json", "").replace(".asn1", " (ASN.1)").replace(".tabular", " (Tabular)");
-                                          return (
-                                            <Menu.Item
-                                              key={version}
-                                              onClick={() => this.loadFromWeb(seriesName, specName, version)}
-                                            >
-                                              {label}
-                                            </Menu.Item>
-                                          )
-                                        })
-                                      }
-                                    </SubMenu>
-                                  )
-                                })
-                              }
-                            </SubMenu>
-                          )
-                        })
-                      }
-                    </SubMenu>
-                  ) : null
-                }
-                <Menu.Item
-                  key="downloadSpecArchive"
+                </a>
+                <a
+                  className="navbar-item"
+                  onClick={() =>
+                    this.setState({ modalLoadFromCloudVisible: true })
+                  }
+                >
+                  Load from cloud
+                </a>
+                <a
+                  className="navbar-item"
                   onClick={() => {
                     ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
                       url: GH_SPEC_ARCHIVE,
-                    })
+                    });
                   }}
                 >
                   Download spec archive
-                </Menu.Item>
-                <Menu.Item
-                  key="visitSpecRepository"
+                </a>
+                <a
+                  className="navbar-item"
                   onClick={() => {
                     ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
                       url: GH_SPEC_REPO,
-                    })
+                    });
                   }}
                 >
                   Visit spec repository
-                </Menu.Item>
-              </SubMenu>
-              <Menu.Item
-                key="settings"
-                onClick={() => this.setState({ modalSettingsVisible: true })}
-              >
-                Settings
-              </Menu.Item>
-              <SubMenu key="help" title="Help">
-                <Menu.Item
-                  key="checkForUpdate"
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="navbar-end">
+            <a
+              className="navbar-item"
+              onClick={() => this.setState({ modalSettingsVisible: true })}
+            >
+              Settings
+            </a>
+            <div className="navbar-item has-dropdown is-hoverable">
+              <a className="navbar-link">Help</a>
+              <div className="navbar-dropdown is-right">
+                <a
+                  className="navbar-item"
                   onClick={() => {
                     ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
                       url: GH_TOOL3RD_RELEASES,
-                    })
+                    });
                   }}
                 >
                   Check for update
-                </Menu.Item>
-                <Menu.Item
+                </a>
+                <a
+                  className="navbar-item"
                   key="issues"
                   onClick={() => {
                     ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
                       url: GH_TOOL3RD_ISSUES,
-                    })
+                    });
                   }}
                 >
                   Report Bug & Suggest feature
-                </Menu.Item>
-                <Menu.Item
+                </a>
+                <a
+                  className="navbar-item"
                   key="about"
                   onClick={() => {
                     this.setState({ showAbout: true });
                   }}
                 >
                   About
-                </Menu.Item>
-              </SubMenu>
-              {
-                semverCompare(versionLatest ?? '', version) > 0 ? (
-                  <Menu.Item
-                    onClick={() => {
-                      ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
-                        url: GH_TOOL3RD_RELEASES,
-                      })
-                    }}
-                  >
-                    <Tag>New version available</Tag>
-                  </Menu.Item>
-                ) : null
-              }
-            </Menu>
+                </a>
+              </div>
+            </div>
+            {semverCompare(versionLatest ?? '', version) > 0 ? (
+              <div className="navbar-item">
+                <button
+                  className="button is-primary"
+                  onClick={() => {
+                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
+                      url: GH_TOOL3RD_RELEASES,
+                    });
+                  }}
+                >
+                  New version available
+                </button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+        <div className="columns">
+          <div className="column is-four-fifths" id="main">
             <Switch>
               <Route exact path={routes.HOME} component={HomePage} />
               <Route
@@ -383,108 +365,85 @@ export default class Routes extends React.Component<
                 render={() => <Diff resourceList={resourceList} />}
               />
             </Switch>
-          </Grid.Column>
-          <Grid.Column width={3} id="aside">
-            <Item.Group divided>
+          </div>
+          <div className="column" id="aside">
+            <div className="box">
               {resourceList.map((resource) => {
                 const { resourceId } = resource;
                 return <ResourceItem key={resourceId} resource={resource} />;
               })}
-            </Item.Group>
-            <input
-              type="file"
-              accept=".asn1,.json,.htm,.html"
-              hidden
-              ref={this.fileInputRef}
-              onChange={this.onFileChange}
-            />
-            <Divider />
-            <MemoryUsage />
-          </Grid.Column>
-        </Grid>
-        <Dimmer active={waiting}>
-          <Loader />
-        </Dimmer>
-        <Modal open={workerError !== null}>
-          <Modal.Header>Oops...</Modal.Header>
-          <Modal.Content>
-            <Modal.Description>
+              <input
+                type="file"
+                accept=".asn1,.json,.htm,.html"
+                hidden
+                ref={this.fileInputRef}
+                onChange={this.onFileChange}
+              />
+              <hr />
+              <MemoryUsage />
+            </div>
+          </div>
+        </div>
+        <ModalLoadFromCloud
+          visible={modalLoadFromCloudVisible}
+          onCancel={() => this.setState({ modalLoadFromCloudVisible: false })}
+          specList={specList}
+          onOk={(series, spec, version) => {
+            this.setState({ modalLoadFromCloudVisible: false });
+            this.loadFromWeb(series, spec, version);
+          }}
+        />
+        <div className={`modal ${waiting ? 'is-active' : ''}`}>
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <progress className="progress is-primary" max="100"></progress>
+          </div>
+        </div>
+        <div className={`modal ${workerError ? 'is-active' : ''}`}>
+          <div className="modal-background"></div>
+          <div className="modal-card">
+            <div className="modal-card-head">
+              <div className="modal-card-title">Oops...</div>
+            </div>
+            <div className="modal-card-body">
               tool3rd encountered an error. If you are willing to support
               tool3rd and contribute fixing the problem, please copy the below
               message and report in the issue tracker.
-              <Form>
-                <Form.TextArea
-                  id="workerError"
-                  value={workerError?.toString()}
-                  rows={24}
-                />
-                <Button onClick={() => this.openIssueTracker()}>
-                  Go to Issue tracker
-                </Button>
-              </Form>
-            </Modal.Description>
-          </Modal.Content>
-        </Modal>
-        <Modal
-          open={showAbout}
-          onClose={() => {
-            this.setState({ showAbout: false });
-          }}
-        >
-          {/* <Modal.Header>tool3rd</Modal.Header> */}
-          <Modal.Content>
-            <Container textAlign="center">
-              <Header as="h1">tool3rd</Header>
-              <>
-                <Row>
-                  <Col span={12} style={{ textAlign: "right" }}>Current:</Col>
-                  <Col span={12} style={{ textAlign: "left" }}>{version}</Col>
-                </Row>
-                {
-                  versionLatest !== undefined ? (
-                    <Row>
-                      <Col span={12} style={{ textAlign: "right" }}>Latest:</Col>
-                      <Col span={12} style={{ textAlign: "left" }}>{versionLatest}</Col>
-                    </Row>
-                  ) : null
-                }
-              </>
-              <List bulleted horizontal>
-                <List.Item
-                  as="a"
-                  onClick={() => {
-                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
-                      url: GH_TOOL3RD_REPO,
-                    })
-                  }}
-                >
-                  Project home
-                </List.Item>
-                <List.Item
-                  as="a"
-                  onClick={() => {
-                    ipcRenderer.send(CHAN_SHELL_OPEN_EXTERNAL, {
-                      url: GH_LIB3RD_REPO,
-                    })
-                  }}
-                >
-                  lib3rd
-                </List.Item>
-              </List>
-            </Container>
-          </Modal.Content>
-        </Modal>
+              <textarea
+                className="textarea"
+                id="workerError"
+                cols={80}
+                rows={24}
+                readOnly
+              >
+                {workerError?.toString()}
+              </textarea>
+              <button
+                className="button"
+                onClick={() => this.openIssueTracker()}
+              >
+                Go to Issue tracker
+              </button>
+            </div>
+          </div>
+        </div>
+        <ModalAbout
+          visible={showAbout}
+          onClose={() => this.setState({ showAbout: false })}
+          version={version}
+          versionLatest={versionLatest}
+        />
         <div id="toast">
           {toastList.map((toast) => {
             const { key, message } = toast;
             return (
-              <Message
-                key={key}
-                negative
-                onDismiss={() => this.removeToast(key)}
-              >
+              <div key={key} className="notification is-danger is-light">
+                <button
+                  className="delete"
+                  onClick={() => this.removeToast(key)}
+                ></button>
                 {message}
-              </Message>
+              </div>
             );
           })}
         </div>
@@ -504,3 +463,49 @@ export default class Routes extends React.Component<
     );
   }
 }
+
+/* TODO: Make it modal
+{specList.length ? (
+              <SubMenu key="cloud" title="Load from cloud">
+                {specList.map(
+                  (series: {
+                    name: string;
+                    children: { name: string; children: string[] }[];
+                  }) => {
+                    const { name: seriesName, children } = series;
+                    return (
+                      <SubMenu key={seriesName} title={seriesName}>
+                        {children.map((spec) => {
+                          const { name: specName, children } = spec;
+                          return (
+                            <SubMenu key={specName} title={specName}>
+                              {children.map((version) => {
+                                const label = version
+                                  .replace('.json', '')
+                                  .replace('.asn1', ' (ASN.1)')
+                                  .replace('.tabular', ' (Tabular)');
+                                return (
+                                  <Menu.Item
+                                    key={version}
+                                    onClick={() =>
+                                      this.loadFromWeb(
+                                        seriesName,
+                                        specName,
+                                        version
+                                      )
+                                    }
+                                  >
+                                    {label}
+                                  </Menu.Item>
+                                );
+                              })}
+                            </SubMenu>
+                          );
+                        })}
+                      </SubMenu>
+                    );
+                  }
+                )}
+              </SubMenu>
+            ) : null}
+*/

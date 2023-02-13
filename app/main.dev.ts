@@ -53,7 +53,7 @@ const store = new Store({
     security: {
       cert: '',
       rejectUnauthorized: true,
-    }
+    },
   },
   migrations: {
     '1.15.0': (store) => {
@@ -63,8 +63,8 @@ const store = new Store({
         store.set('proxy', proxyNew);
         store.set('security.rejectUnauthorized', rejectUnauthorized);
       }
-    }
-  }
+    },
+  },
 });
 const { cert, rejectUnauthorized } = store.get('security');
 
@@ -118,10 +118,12 @@ const createWindow = async () => {
       process.env.ERB_SECURE !== 'true'
         ? {
             nodeIntegration: true,
+            contextIsolation: false,
             enableRemoteModule: true,
           }
         : {
             preload: path.join(__dirname, 'dist/renderer.prod.js'),
+            contextIsolation: false,
             enableRemoteModule: true,
           },
   });
@@ -210,17 +212,15 @@ ipcMain.on(CHAN_APP_RELAUNCH, (_event, _args) => {
 
 ipcMain.handle(CHAN_BROWSE_CERTIFICATE, (_event, _args) => {
   const focusedWindow = BrowserWindow.getFocusedWindow();
-  return focusedWindow && dialog.showOpenDialog(
-    focusedWindow,
-  );
+  return focusedWindow && dialog.showOpenDialog(focusedWindow);
 });
 
 ipcMain.handle(CHAN_DIALOG_SHOWSAVE, (_event, args) => {
   const { defaultPath, filters } = args;
   const focusedWindow = BrowserWindow.getFocusedWindow();
-  return focusedWindow && dialog.showSaveDialog(
-    focusedWindow,
-    { defaultPath, filters },
+  return (
+    focusedWindow &&
+    dialog.showSaveDialog(focusedWindow, { defaultPath, filters })
   );
 });
 
@@ -238,7 +238,7 @@ ipcMain.on(CHAN_RENDERER_TO_MAIN, (_event, msg) => {
     }
     default: {
       break;
-    };
+    }
   }
 });
 
