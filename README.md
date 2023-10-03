@@ -1,26 +1,42 @@
 # tool3rd
 
-Assistant for 3GPP telecommunication development
+An Electron application with React and TypeScript
 
-- [How to Use](#how-to-use)
-- [Library](#library)
-- [Sponsor](#sponsor)
+## Tech stacks used
 
-## How to Use
+- Boilerplate: [electron-vite](https://electron-vite.org/)
+- App: [Electron](https://www.electronjs.org/)
+- Frontend: [React](https://react.dev/)
+- UI: [shadcn/ui](https://ui.shadcn.com/)
+- Build tool: [Vite](https://vitejs.dev/guide)
 
-You can start with below quick start guide videos:
+## Recommended IDE Setup
 
-- [Loading Resources from Cloud](https://youtu.be/YoyXIi-naBY)
-- [Loading a Local File](https://youtu.be/84zraDHqWV8)
-- [Formatting Message/IE](https://youtu.be/19P3oqcPhTQ)
+- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
-## Library
+## Project Setup
 
-tool3rd is based on a library [lib3rd](https://github.com/proj3rd/lib3rd)
+### Install
 
-## Sponsor
+```bash
+$ npm install
+```
 
-Currently, tool3rd is a non-commercial project.
-Please consider sponsor for this project to grow
+### Development
 
-<a href="https://www.buymeacoffee.com/proj3rd" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" width="217" height="60" style="height: 60px !important;width: 217px !important;" ></a>
+```bash
+$ npm run dev
+```
+
+### Build
+
+```bash
+# For windows
+$ npm run build:win
+
+# For macOS
+$ npm run build:mac
+
+# For Linux
+$ npm run build:linux
+```
