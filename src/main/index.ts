@@ -72,11 +72,13 @@ function createWindow(worker: Worker): void {
           const saveLocation = dialog.showSaveDialogSync({
             filters: [{ name: 'Spreadsheet file', extensions: ['xlsx'] }]
           })
+          const saveLocationWithExtension =
+            saveLocation && !saveLocation.endsWith('.xlsx') ? `${saveLocation}.xlsx` : saveLocation
           worker.postMessage({
             src: 'main',
             dest: 'worker',
             channel: 'saveLocationResponse',
-            saveLocation
+            saveLocation: saveLocationWithExtension
           } satisfies z.infer<typeof SaveLocationResponse>)
         }
       }
