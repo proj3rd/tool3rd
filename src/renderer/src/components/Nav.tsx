@@ -18,7 +18,6 @@ type Props = {
   onSelectPage: (page: ValueOf<typeof Page>) => void
   onOpenResourceSheet: () => void
   onOpenLoadResourceDialog: () => void
-  onOpenSettingDialog: () => void
   onOpenAboutDialog: () => void
   workerState: z.infer<typeof WorkerState>
 }
@@ -27,7 +26,6 @@ export function Nav({
   onSelectPage,
   onOpenResourceSheet,
   onOpenLoadResourceDialog,
-  // onOpenSettingDialog,
   onOpenAboutDialog,
   workerState
 }: Props) {
@@ -120,15 +118,6 @@ export function Nav({
               Resources
             </Button>
           </NavigationMenuItem>
-          {/* <NavigationMenuItem>
-            <Button
-              variant="ghost"
-              onClick={onOpenSettingDialog}
-              disabled={workerState === 'busy'}
-            >
-              Settings
-            </Button>
-          </NavigationMenuItem> */}
           <NavigationMenuItem>
             <Button variant="ghost" onClick={onOpenAboutDialog} disabled={workerState === 'busy'}>
               About

@@ -6,7 +6,6 @@ import { Landing } from './pages/Landing'
 import { FormatMessage } from './pages/FormatMessage'
 import { DiffAsn1 } from './pages/DiffAsn1'
 import { AboutDialog } from './components/AboutDialog'
-import { SettingDialog } from './components/SettingDialog'
 import { debounce } from '@/lib/debounce'
 import { LoadResourceDialog } from './components/LoadResourceDialog'
 import { z } from 'zod'
@@ -27,7 +26,6 @@ function App(): JSX.Element {
   const [page, setPage] = useState(Page.Landing)
   const [openResourceSheet, setOpenResourceSheet] = useState(false)
   const [openLoadResourceDialog, setOpenLoadResourceDialog] = useState(false)
-  const [openSettingDialog, setOpenSettingDialog] = useState(false)
   const [openAboutDialog, setOpenAboutDialog] = useState(false)
   const [workerState, setWorkerState] = useState<z.infer<typeof WorkerState>>('busy')
   const [resourceList, setResourceList] = useState<Array<z.infer<typeof ResourceMetadata>>>([])
@@ -59,7 +57,6 @@ function App(): JSX.Element {
         onSelectPage={setPage}
         onOpenResourceSheet={() => setOpenResourceSheet(true)}
         onOpenLoadResourceDialog={() => setOpenLoadResourceDialog(true)}
-        onOpenSettingDialog={() => setOpenSettingDialog(true)}
         onOpenAboutDialog={() => setOpenAboutDialog(true)}
         workerState={workerState}
       />
@@ -79,7 +76,6 @@ function App(): JSX.Element {
         onOpenChange={setOpenLoadResourceDialog}
         workerState={workerState}
       />
-      <SettingDialog open={openSettingDialog} onOpenChange={setOpenSettingDialog} />
       <AboutDialog open={openAboutDialog} onOpenChange={setOpenAboutDialog} />
       <Toaster />
     </div>

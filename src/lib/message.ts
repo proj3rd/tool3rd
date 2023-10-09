@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { Settings } from './settings'
 import { MemoryUsage } from './memoryUsage'
 import { IeList, QueueItem, ResourceMetadata } from './resource'
 import { WorkerState } from './workerState'
@@ -18,8 +17,6 @@ export const Channels = {
   FormatReport: z.literal('formatReport'),
   SaveLocationRequest: z.literal('saveLocationRequest'),
   SaveLocationResponse: z.literal('saveLocationResponse'),
-  GetSettings: z.literal('getSettings'),
-  SetSettings: z.literal('setSettings'),
   OpenFolderRequest: z.literal('openFolderRequest'),
   WorkerStateReport: z.literal('workerStateReport')
 }
@@ -110,19 +107,6 @@ export const WorkerStateReport = Message.merge(
   z.object({
     channel: Channels.WorkerStateReport,
     state: WorkerState
-  })
-)
-
-export const SettingsGetRequest = Message.merge(
-  z.object({
-    channel: Channels.GetSettings
-  })
-)
-
-export const SettingsSetRequest = Message.merge(
-  z.object({
-    channel: Channels.SetSettings,
-    settings: Settings
   })
 )
 

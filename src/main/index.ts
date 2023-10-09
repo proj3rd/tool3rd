@@ -2,21 +2,15 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
-import { INITIAL_SETTINGS } from '../lib/settings'
 import createWorker from './worker?nodeWorker'
 import { Worker } from 'worker_threads'
 import {
   Message,
   OpenFolderRequest,
   SaveLocationRequest,
-  SaveLocationResponse,
-  SettingsGetRequest,
-  SettingsSetRequest
+  SaveLocationResponse
 } from '../lib/message'
 import { z } from 'zod'
-
-const settingsPath = join(app.getPath('userData'), 'settings.json')
 
 function createWindow(worker: Worker): void {
   // Create the browser window.
@@ -40,16 +34,6 @@ function createWindow(worker: Worker): void {
     if (messageParseResult.success) {
       const { dest } = messageParseResult.data
       if (dest === 'main') {
-        if (SettingsGetRequest.safeParse(msg).success) {
-          return JSON.parse(readFileSync(settingsPath, 'utf8'))
-        }
-        const settingsSetRequestParseResult = SettingsSetRequest.safeParse(msg)
-        if (settingsSetRequestParseResult.success) {
-          const { settings } = settingsSetRequestParseResult.data
-          writeFileSync(settingsPath, JSON.stringify(settings))
-          app.relaunch()
-          return
-        }
         const openFolderRequestParseResult = OpenFolderRequest.safeParse(msg)
         if (openFolderRequestParseResult.success) {
           const { location } = openFolderRequestParseResult.data
@@ -119,10 +103,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  if (!existsSync(settingsPath)) {
-    writeFileSync(settingsPath, JSON.stringify(INITIAL_SETTINGS))
-  }
 
   const worker = createWorker({})
   createWindow(worker)
