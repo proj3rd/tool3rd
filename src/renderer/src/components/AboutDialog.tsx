@@ -26,6 +26,9 @@ export function AboutDialog({ open, onOpenChange }: Props) {
           <a href="https://github.com/proj3rd/tool3rd" target="_blank">
             GitHub
           </a>
+          <a href="https://github.com/proj3rd/tool3rd/blob/main/CHANGELOG.md" target="_blank">
+            Changelog
+          </a>
           <a href="https://github.com/proj3rd/tool3rd/releases" target="_blank">
             Check for update
           </a>
