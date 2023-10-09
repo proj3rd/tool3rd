@@ -64,7 +64,7 @@ function App(): JSX.Element {
       {page === Page.FormatMessage && (
         <FormatMessage resourceList={resourceList} workerState={workerState} />
       )}
-      {page === Page.DiffASN1 && <DiffAsn1 />}
+      {page === Page.DiffASN1 && <DiffAsn1 resourceList={resourceList} workerState={workerState} />}
       <ResourceSheet
         open={openResourceSheet}
         onOpenChange={setOpenResourceSheet}

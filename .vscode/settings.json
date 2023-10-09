@@ -13,6 +13,7 @@
     ".editorconfig": true,
     ".eslint*": true,
     ".npmrc": true,
-    ".prettier*": true
+    ".prettier*": true,
+    "out": true
   }
 }

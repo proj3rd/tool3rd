@@ -5,8 +5,6 @@
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts",
-    "src/components/**/*.ts",
-    "src/components/**/*.tsx",
     "src/lib/*",
     "package.json"
   ],
@@ -17,6 +15,9 @@
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
+      ],
+      "@/components/*": [
+        "./src/renderer/src/components/*"
       ],
       "@/*": [
         "./src/*"

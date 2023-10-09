@@ -23,6 +23,7 @@ import {
 } from '@/lib/message'
 import { IeList, QueueItem, ResourceMetadata } from '@/lib/resource'
 import { WorkerState } from '@/lib/workerState'
+import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
@@ -50,6 +51,9 @@ export function FormatMessage({ resourceList, workerState }: Props) {
   }
 
   function handleResourceIdChange(id: string) {
+    if (workerState === 'busy') {
+      return
+    }
     selectResourceId(id)
     getIeList(id)
   }
@@ -102,6 +106,9 @@ export function FormatMessage({ resourceList, workerState }: Props) {
   }
 
   function format() {
+    if (workerState === 'busy') {
+      return
+    }
     window.electron.ipcRenderer.invoke('message', {
       src: 'renderer',
       dest: 'worker',
@@ -265,7 +272,7 @@ export function FormatMessage({ resourceList, workerState }: Props) {
       </Tabs>
       <div className="flex justify-end">
         <Button disabled={!queue.length || workerState === 'busy'} onClick={format}>
-          Format
+          {workerState === 'busy' ? <Loader2 className="animate-spin" /> : 'Format'}
         </Button>
       </div>
     </div>

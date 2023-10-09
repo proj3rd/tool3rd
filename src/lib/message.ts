@@ -15,6 +15,8 @@ export const Channels = {
   IeListReport: z.literal('ieListReport'),
   FormatRequest: z.literal('formatRequest'),
   FormatReport: z.literal('formatReport'),
+  DiffRequest: z.literal('diffRequest'),
+  DiffReport: z.literal('diffReport'),
   SaveLocationRequest: z.literal('saveLocationRequest'),
   SaveLocationResponse: z.literal('saveLocationResponse'),
   OpenFolderRequest: z.literal('openFolderRequest'),
@@ -90,9 +92,26 @@ export const FormatReport = Message.merge(
   })
 )
 
+export const DiffRequest = Message.merge(
+  z.object({
+    channel: Channels.DiffRequest,
+    oldResourceId: z.string(),
+    newResourceId: z.string()
+  })
+)
+
+export const DiffReport = Message.merge(
+  z.object({
+    channel: Channels.DiffReport,
+    saveLocation: z.string().optional(),
+    success: z.boolean()
+  })
+)
+
 export const SaveLocationRequest = Message.merge(
   z.object({
-    channel: Channels.SaveLocationRequest
+    channel: Channels.SaveLocationRequest,
+    extension: z.enum(['xlsx', 'html'])
   })
 )
 

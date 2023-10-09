@@ -1,6 +1,8 @@
 import { parentPort as port, workerData as _workerData } from 'worker_threads'
 import { z } from 'zod'
 import {
+  DiffReport,
+  DiffRequest,
   FormatReport,
   FormatRequest,
   IeListReport,
@@ -18,14 +20,18 @@ import { getHeapStatistics } from 'v8'
 import { debounce } from '../lib/debounce'
 import { Resource } from '../lib/resource'
 import { WorkerState } from '../lib/workerState'
+import { asn1 } from 'lib3rd'
+import diffTemplate from '../../resources/diff.pug?raw'
 import { Modules } from 'lib3rd/dist/asn1/classes/modules'
 import { Definitions } from 'lib3rd/dist/ran3/classes/definitions'
 import { Workbook } from 'exceljs'
 import { getWorkbook } from 'lib3rd/dist/common/spreadsheet'
 import { cloneDeep } from 'lodash'
+import { writeFileSync } from 'fs'
 
 const resourceList: Resource[] = []
 let formatted: Workbook | undefined
+let renderedDiff: string | undefined
 
 if (!port) {
   throw Error('Worker parent port error')
@@ -59,6 +65,16 @@ function reportFormatComplete(success: boolean, saveLocation: string | undefined
     success,
     saveLocation
   } satisfies z.infer<typeof FormatReport>)
+}
+
+function reportDiffComplete(success: boolean, saveLocation: string | undefined) {
+  port?.postMessage({
+    src: 'worker',
+    dest: 'renderer',
+    channel: 'diffReport',
+    success,
+    saveLocation
+  } satisfies z.infer<typeof DiffReport>)
 }
 
 function reportWorkerState(state: z.infer<typeof WorkerState>) {
@@ -198,7 +214,40 @@ port.on('message', (msg: unknown) => {
     port?.postMessage({
       src: 'worker',
       dest: 'main',
-      channel: 'saveLocationRequest'
+      channel: 'saveLocationRequest',
+      extension: 'xlsx'
+    } satisfies z.infer<typeof SaveLocationRequest>)
+    return
+  }
+
+  const diffRequestParseResult = DiffRequest.safeParse(msg)
+  if (diffRequestParseResult.success) {
+    reportWorkerState('busy')
+    const { oldResourceId, newResourceId } = diffRequestParseResult.data
+    const oldResource = resourceList.find(({ id }) => id === oldResourceId)
+    if (!(oldResource?.resource instanceof Modules)) {
+      reportWorkerState('idle')
+      return
+    }
+    const newResource = resourceList.find(({ id }) => id === newResourceId)
+    if (!(newResource?.resource instanceof Modules)) {
+      reportWorkerState('idle')
+      return
+    }
+    const patchList = asn1.diff(oldResource.resource, newResource.resource)
+    renderedDiff = asn1.renderDiff(
+      {
+        specOld: oldResource.name,
+        specNew: newResource.name,
+        patchList
+      },
+      diffTemplate
+    )
+    port?.postMessage({
+      src: 'worker',
+      dest: 'main',
+      channel: 'saveLocationRequest',
+      extension: 'html'
     } satisfies z.infer<typeof SaveLocationRequest>)
     return
   }
@@ -228,6 +277,19 @@ port.on('message', (msg: unknown) => {
           reportMemoryUsage()
           reportWorkerState('idle')
         })
+    }
+    if (renderedDiff) {
+      try {
+        writeFileSync(saveLocation, renderedDiff)
+        reportDiffComplete(true, saveLocation)
+      } catch (e) {
+        reportDiffComplete(false, undefined)
+        console.error(e)
+      } finally {
+        renderedDiff = undefined
+        reportMemoryUsage()
+        reportWorkerState('idle')
+      }
     }
     return
   }

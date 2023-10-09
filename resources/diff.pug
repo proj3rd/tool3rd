@@ -1,0 +1,63 @@
+//- Preprocessing
+each patch in patchList
+  - patch.moduleName = patch.moduleName1 ? patch.moduleName1 : patch.moduleName2
+  - patch.assignmentName = patch.assignmentName1 ? patch.assignmentName1 : patch.assignmentName2
+  - patch.labelText = patch.change == 'modified' ? '±' : patch.change == 'added' ? '+' : patch.change == 'removed' ? '-' : ''
+
+html
+  head
+    title Diff !{specOld} → !{specNew}
+    link(rel='stylesheet' type='text/css' href='https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css')
+    link(rel='stylesheet' href='https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css')
+    style.
+      html. body {
+        height: 100%;
+      }
+      /* Prevent contents goiong outside */
+      .ui.grid {
+        height: 100%;
+        margin: 0;
+      }
+      aside, main {
+        height: 100%;
+        overflow-y: scroll;
+      }
+      /* Hide diff2html unnecessary part */
+      .d2h-file-header {
+        display: none;
+      }
+
+  body
+    div(class='ui grid')
+      aside(class='four wide column')
+        h1(class='ui header') !{specOld} → !{specNew}
+        ol(class='ui list')
+          each patch in patchList
+            li(value=patch.labelText)
+              a(href='#'+patch.moduleName+'.'+patch.assignmentName) !{patch.assignmentName}
+
+      main(class='twelve wide column')
+        each patch in patchList
+          section(id=patch.moduleName+'.'+patch.assignmentName class=patch.change)
+            h2(class='ui header')
+              | !{patch.labelText}
+              |
+              if patch.change == 'modified'
+                | !{patch.assignmentName1}
+                div(class='ui label') !{patch.moduleName1}
+                | → !{patch.assignmentName2}
+                div(class='ui label') !{patch.moduleName2}
+              else
+                | !{patch.assignmentName}
+                div(class='ui label') !{patch.moduleName}
+            div !{patch.patchHtml}
+
+        div(class='column right aligned')
+          | Powered by
+          |
+          a(href='https://github.com/3gpp-network/lib3rd') lib3rd
+          | .
+          |
+          | Report an
+          |
+          a(href='https://github.com/3gpp-network/lib3rd/issues') issue

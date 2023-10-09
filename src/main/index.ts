@@ -52,12 +52,18 @@ function createWindow(worker: Worker): void {
     if (messageParseResult.success) {
       const { dest, channel } = messageParseResult.data
       if (dest === 'main') {
-        if (SaveLocationRequest.safeParse(msg).success) {
+        const saveLocationRequestParseResult = SaveLocationRequest.safeParse(msg)
+        if (saveLocationRequestParseResult.success) {
+          const { extension } = saveLocationRequestParseResult.data
+          const filetype =
+            extension === 'xlsx' ? 'Spreadsheet file' : extension === 'html' ? 'Web page file' : ''
           const saveLocation = dialog.showSaveDialogSync({
-            filters: [{ name: 'Spreadsheet file', extensions: ['xlsx'] }]
+            filters: [{ name: filetype, extensions: [extension] }]
           })
           const saveLocationWithExtension =
-            saveLocation && !saveLocation.endsWith('.xlsx') ? `${saveLocation}.xlsx` : saveLocation
+            saveLocation && !saveLocation.endsWith(`.${extension}`)
+              ? `${saveLocation}.${extension}`
+              : saveLocation
           worker.postMessage({
             src: 'main',
             dest: 'worker',

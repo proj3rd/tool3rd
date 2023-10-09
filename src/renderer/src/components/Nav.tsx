@@ -89,7 +89,7 @@ export function Nav({
               Format messsage
             </Button>
           </NavigationMenuItem>
-          {/* <NavigationMenuItem>
+          <NavigationMenuItem>
             <Button
               variant="ghost"
               onClick={selectPage(Page.DiffASN1)}
@@ -97,7 +97,7 @@ export function Nav({
             >
               Diff ASN.1
             </Button>
-          </NavigationMenuItem> */}
+          </NavigationMenuItem>
           <NavigationMenuItem>
             <Button
               variant="ghost"
