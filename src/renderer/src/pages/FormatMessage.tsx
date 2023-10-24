@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastAction } from '@/components/ui/toast'
 import { H1 } from '@/components/ui/typography'
 import { useToast } from '@/components/ui/use-toast'
+import { debounce } from '@/lib/debounce'
 import { readable } from '@/lib/filename'
 import {
   FormatReport,
@@ -24,7 +25,7 @@ import {
 import { IeList, QueueItem, ResourceMetadata } from '@/lib/resource'
 import { WorkerState } from '@/lib/workerState'
 import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { z } from 'zod'
 
 type Props = {
@@ -35,8 +36,13 @@ type Props = {
 export function FormatMessage({ resourceList, workerState }: Props) {
   const [selectedResourceId, selectResourceId] = useState<string | undefined>()
   const [ieList, setIeList] = useState<z.infer<typeof IeList>>([])
+  const [searchKeyword, setSearchKeyword] = useState('')
   const [queue, setQueue] = useState<Array<z.infer<typeof QueueItem>>>([])
   const { toast } = useToast()
+
+  const handleSearchKeywordChange = debounce((e: ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(e.target.value.trim().toLocaleLowerCase())
+  }, 500)
 
   function getIeList(id: string) {
     if (!id) {
@@ -78,7 +84,7 @@ export function FormatMessage({ resourceList, workerState }: Props) {
       return
     }
     const newQueue = [...queue]
-    ieList.forEach(({ key, name }) => {
+    filteredIeList.forEach(({ key, name }) => {
       if (
         newQueue.find(
           (queueItem) =>
@@ -159,6 +165,10 @@ export function FormatMessage({ resourceList, workerState }: Props) {
     })
   }, [])
 
+  const filteredIeList = searchKeyword
+    ? ieList.filter((ie) => ie.name.toLocaleLowerCase().includes(searchKeyword))
+    : ieList
+
   return (
     <div className="space-y-4">
       <H1 className="my-6">Format message</H1>
@@ -183,7 +193,7 @@ export function FormatMessage({ resourceList, workerState }: Props) {
           <span className="font-bold">Add all</span>
           <Button
             variant="outline"
-            disabled={!ieList.length}
+            disabled={!filteredIeList.length}
             onClick={() => {
               addAll(false)
             }}
@@ -192,7 +202,7 @@ export function FormatMessage({ resourceList, workerState }: Props) {
           </Button>
           <Button
             variant="outline"
-            disabled={!ieList.length}
+            disabled={!filteredIeList.length}
             onClick={() => {
               addAll(true)
             }}
@@ -206,12 +216,12 @@ export function FormatMessage({ resourceList, workerState }: Props) {
           </Button>
         </span>
       </div>
-      <Input placeholder="Search IE" />
+      <Input onChange={handleSearchKeywordChange} placeholder="Search IE" />
       <Tabs defaultValue="pool">
         <TabsList className="w-full">
           <TabsTrigger value="pool" className="flex-1 space-x-2">
             <span>Pool</span>
-            <Badge>{ieList.length}</Badge>
+            <Badge>{filteredIeList.length}</Badge>
           </TabsTrigger>
           <TabsTrigger value="queue" className="flex-1 space-x-2">
             <span>Queue</span>
@@ -221,7 +231,7 @@ export function FormatMessage({ resourceList, workerState }: Props) {
         <TabsContent value="pool">
           <ScrollArea className="h-80 p-4">
             <div className="space-y-2">
-              {ieList.map(({ name, key }) => (
+              {filteredIeList.map(({ name, key }) => (
                 <div key={key} className="flex justify-between border-b">
                   <span className="truncate">{name}</span>
                   <span>

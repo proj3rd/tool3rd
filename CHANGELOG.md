@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.0
+
+- Add missing IE filtering functionality
+
 ## v2.0.0
 
 - No more proxy and custom certificate settings are required

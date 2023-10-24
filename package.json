@@ -1,6 +1,6 @@
 {
   "name": "tool3rd",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Telecommunication development assistant",
   "main": "./out/main/index.js",
   "author": "Project 3rd",
