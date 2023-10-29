@@ -8,11 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          git checkout -b build/macos
-          npm install
-          npm run build:mac
-          mv .gitignore .nogitignore
-          git add out
-          mv .nogitignore .gitignore
-          git commit -m "macOS app"
+          git checkout -b build/macos &&
+          npm install &&
+          npm run build:mac &&
+          mv .gitignore .nogitignore &&
+          git add out &&
+          mv .nogitignore .gitignore &&
+          git commit -m "macOS app" &&
           git push origin build/macos
