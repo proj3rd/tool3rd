@@ -2,3 +2,7 @@ name: Build macOS app
 on:
   release:
     types: [releases]
+jobs:
+  build:
+    runs-on: macos-12
+    steps:
