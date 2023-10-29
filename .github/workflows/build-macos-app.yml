@@ -1,9 +1,12 @@
 name: Build macOS app
 on:
   release:
-    types: [releases]
+    types: [created]
 jobs:
   build:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          npm install
+          npm run build:mac
