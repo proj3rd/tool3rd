@@ -1,0 +1,4 @@
+name: Build macOS app
+on:
+  release:
+    types: [releases]
