@@ -12,8 +12,9 @@ jobs:
           git checkout -b build/macos &&
           npm install &&
           npm run build:mac &&
-          mv .gitignore .nogitignore &&
-          git add out &&
-          mv .nogitignore .gitignore &&
+          rm .gitignore &&
+          cd dist &&
+          zip tool3rd-mac.split.zip tool3rd*.zip tool3rd*.dmg -s 64m &&
+          git add tool3rd-mac.split.z* &&
           git commit -m "macOS app" &&
           git push origin build/macos
