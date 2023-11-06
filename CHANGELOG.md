@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.1
+
+- Fix RAN3 tabular not being expanded
+
 ## v2.1.0
 
 - Add missing IE filtering functionality

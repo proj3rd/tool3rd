@@ -195,7 +195,7 @@ port.on('message', (msg: unknown) => {
         if (!definition) {
           return
         }
-        const definitionNew = expand ? cloneDeep(definition) : definition
+        const definitionNew = expand ? cloneDeep(definition).expand(resource) : definition
         definitionNew.toSpreadsheet(formatted)
       }
       const sheetCount = formatted!.worksheets.length
