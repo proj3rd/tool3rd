@@ -16,5 +16,7 @@ jobs:
           cd dist &&
           zip tool3rd-linux.zip tool3rd*.deb tool3rd*.snap tool3rd*.AppImage -s 64m &&
           git add tool3rd-linux.z* &&
+          git config user.name "Seokseong Jeon"
+          git config user.email "sjeon87@gmail.com'
           git commit -m "Linux app" &&
           git push origin build/linux
