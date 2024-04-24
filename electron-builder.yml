@@ -31,12 +31,14 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
+    # - snap
     - deb
   maintainer: electronjs.org
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
+# snap:
+#   base: core20
 npmRebuild: false
 publish:
   provider: generic
