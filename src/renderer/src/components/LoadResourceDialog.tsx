@@ -20,11 +20,13 @@ import { WorkerState } from '@/lib/workerState'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import { useToast } from './ui/use-toast'
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   workerState: z.infer<typeof WorkerState>
+  setWorkerState: (workerState: z.infer<typeof WorkerState>) => void
 }
 
 type SpecDir = {
@@ -37,11 +39,12 @@ type SeriesDir = {
   children: SpecDir[]
 }
 
-export function LoadResourceDialog({ open, onOpenChange, workerState }: Props) {
+export function LoadResourceDialog({ open, onOpenChange, workerState, setWorkerState }: Props) {
   const [dirStruct, setDirStruct] = useState<SeriesDir[]>([])
   const [selectedSeries, selectSeries] = useState<string | undefined>()
   const [selectedSpec, selectSpec] = useState<string | undefined>()
   const [selectedVersion, selectVersion] = useState<string | undefined>()
+  const { toast } = useToast()
 
   useEffect(() => {
     fetch('https://cdn.jsdelivr.net/gh/proj3rd/3gpp-specs-in-json/.dir-list.json')
@@ -54,6 +57,12 @@ export function LoadResourceDialog({ open, onOpenChange, workerState }: Props) {
       })
   }, [])
 
+  useEffect(() => {
+    if (open === true && workerState === 'idle') {
+      toast({ title: 'Done' })
+    }
+  }, [workerState])
+
   function handleOpenChange(open: boolean) {
     if (workerState === 'busy') {
       return
@@ -65,6 +74,7 @@ export function LoadResourceDialog({ open, onOpenChange, workerState }: Props) {
     if (!selectedSeries || !selectedSpec || !selectedVersion) {
       return
     }
+    setWorkerState('busy')
     fetch(
       `https://cdn.jsdelivr.net/gh/proj3rd/3gpp-specs-in-json/${selectedSeries}/${selectedSpec}/${selectedVersion}`
     )

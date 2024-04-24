@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.3
+
+- Notify when resource load completes
+
+## v2.1.2
+
+- Fix wrong DEFAULT value string
+
 ## v2.1.1
 
 - Fix RAN3 tabular not being expanded

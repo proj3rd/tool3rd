@@ -75,6 +75,7 @@ function App(): JSX.Element {
         open={openLoadResourceDialog}
         onOpenChange={setOpenLoadResourceDialog}
         workerState={workerState}
+        setWorkerState={setWorkerState}
       />
       <AboutDialog open={openAboutDialog} onOpenChange={setOpenAboutDialog} />
       <Toaster />
