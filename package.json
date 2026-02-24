@@ -36,6 +36,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "compare-versions": "^6.1.0",
+    "electrobun": "^1.14.4",
     "electron-updater": "^6.1.1",
     "exceljs": "^4.3.0",
     "lib3rd": "github:proj3rd/lib3rd#tool3rd",
